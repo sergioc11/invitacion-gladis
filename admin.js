@@ -275,7 +275,7 @@ function renderTable(guests) {
     }
 
     // Generar mensaje de invitación personalizado
-    const inviteUrl = window.location.origin;
+    const inviteUrl = "https://sergioc11.github.io/invitacion-gladis/";
     const shareMessage = `Hola *${g.nombre_completo}*, queremos invitarte de manera muy especial a celebrar los *70 Años de Doña Gladis*. 🌸
 
 Por favor, ingresa en el siguiente enlace para ver todos los detalles de la invitación y confirmar tu asistencia:
