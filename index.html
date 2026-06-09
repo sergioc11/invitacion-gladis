@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis 70 Años - Gladis Elizabeth Ruano Estrada</title>
+  
+  <!-- Meta etiquetas SEO y de compartir -->
+  <meta name="description" content="Estás cordialmente invitado a celebrar los 70 años de Gladis Elizabeth Ruano Estrada. Confirma tu asistencia aquí.">
+  <meta property="og:title" content="Invitación: 70 Años de Doña Gladis">
+  <meta property="og:description" content="Acompáñanos a celebrar este día tan especial. Sábado 20 de Junio, 18:00 hrs.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts para Tipografía Premium y Moderna -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+  
+  <!-- Estilos CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons para iconos limpios y modernos -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- SDK de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="no-scroll">
+
+  <!-- Sobre / Portada de Apertura (Envelope Cover) -->
+  <div class="envelope-cover" id="envelope-cover">
+    <!-- Línea vertical dorada de fondo -->
+    <div class="envelope-line"></div>
+    
+    <div class="envelope-content">
+      <p class="envelope-intro">Tenemos el honor de invitarte</p>
+      
+      <div class="envelope-years">
+        <span class="years-number">70</span>
+        <span class="years-label">AÑOS</span>
+      </div>
+      
+      <h2 class="envelope-name">Gladis</h2>
+      
+      <!-- Sello de Lacre -->
+      <button class="wax-seal" id="wax-seal-btn" aria-label="Abrir invitación">
+        <span class="seal-inner">
+          <span class="seal-letter">G</span>
+        </span>
+      </button>
+      
+      <p class="envelope-instruction">Toca el sello para abrir</p>
+    </div>
+  </div>
+
+  <!-- Música de fondo (Opcional - controlable por el usuario) -->
+  <div class="music-control" id="music-control-btn" title="Activar/Desactivar Música">
+    <button class="music-btn">
+      <i data-lucide="music" class="music-icon icon-playing"></i>
+      <i data-lucide="music-4" class="music-icon icon-paused hidden"></i>
+    </button>
+    <audio id="bg-music" loop>
+      <!-- Piano instrumental suave y relajante (Warm Memories por Keys of Moon) -->
+      <source src="https://www.chosic.com/wp-content/uploads/2021/04/Warm-Memories-Emotional-Inspiring-Piano.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- Encabezado de Bienvenida (Welcome Header) -->
+  <section class="welcome-header">
+    <!-- Efecto decorativo de hojas/flores de fondo en CSS -->
+    <div class="decor-corner top-left small"></div>
+    <div class="decor-corner top-right small"></div>
+    <div class="decor-corner bottom-left small"></div>
+    <div class="decor-corner bottom-right small"></div>
+
+    <div class="welcome-header-content">
+      <p class="welcome-subheader">Mis 70 Años</p>
+      <h1 class="welcome-title">Gladis Elizabeth</h1>
+      <div class="gold-line"></div>
+      <p class="welcome-quote">
+        "Hay momentos en la vida que son irrepetibles, pero compartirlos con las personas que más queremos los hace inolvidables."
+      </p>
+    </div>
+  </section>
+
+  <!-- Sección Principal con Cuenta Regresiva y Detalles -->
+  <main>
+    
+    <!-- Cuenta Regresiva -->
+    <section class="section countdown-section" id="detalles">
+      <div class="section-container">
+        <h2 class="section-title">Falta Muy Poco</h2>
+        <div class="gold-line"></div>
+        <p class="section-subtitle">Te esperamos para compartir este momento especial</p>
+        
+        <div class="countdown-container" id="countdown">
+          <div class="countdown-item">
+            <span class="countdown-val" id="days">00</span>
+            <span class="countdown-label">Días</span>
+          </div>
+          <div class="countdown-item">
+            <span class="countdown-val" id="hours">00</span>
+            <span class="countdown-label">Horas</span>
+          </div>
+          <div class="countdown-item">
+            <span class="countdown-val" id="minutes">00</span>
+            <span class="countdown-label">Min</span>
+          </div>
+          <div class="countdown-item">
+            <span class="countdown-val" id="seconds">00</span>
+            <span class="countdown-label">Seg</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tarjetas de Detalles del Evento -->
+    <section class="section details-section">
+      <div class="section-container">
+        <div class="details-grid">
+          
+          <!-- Tarjeta Fecha y Hora -->
+          <div class="detail-card animate-on-scroll">
+            <div class="card-icon-wrapper">
+              <i data-lucide="calendar-days"></i>
+            </div>
+            <h3>Fecha y Hora</h3>
+            <p class="card-detail-text">Sábado, 20 de Junio de 2026</p>
+            <p class="card-detail-subtext">18:00 Horas (6:00 PM)</p>
+            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=70+A%C3%B1os+de+Do%C3%B1a+Gladis&dates=20260620T180000/20260620T235959&details=Celebraci%C3%B3n+de+los+70+a%C3%B1os+de+Gladis+Elizabeth+Ruano+Estrada.+%C2%A1Te+esperamos!&location=Por+definirse" target="_blank" class="card-btn">
+              <i data-lucide="calendar"></i> Agendar Evento
+            </a>
+          </div>
+
+          <!-- Tarjeta Lugar -->
+          <div class="detail-card animate-on-scroll">
+            <div class="card-icon-wrapper">
+              <i data-lucide="map-pin"></i>
+            </div>
+            <h3>Lugar</h3>
+            <p class="card-detail-text">Por Definirse</p>
+            <p class="card-detail-subtext">Te notificaremos la ubicación exacta muy pronto.</p>
+            <button class="card-btn btn-disabled" disabled>
+              <i data-lucide="navigation"></i> Ver Mapa (Próximamente)
+            </button>
+          </div>
+
+
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Galería de Fotos -->
+    <section class="section gallery-section" id="galeria">
+      <div class="section-container">
+        <h2 class="section-title">Nuestros Recuerdos</h2>
+        <div class="gold-line"></div>
+        <p class="section-subtitle">Momentos que atesoramos con cariño</p>
+
+        <!-- Carrusel de fotos interactivo y responsivo -->
+        <div class="gallery-carousel-wrapper animate-on-scroll">
+          <div class="carousel-container">
+            <div class="carousel-track" id="carousel-track">
+              <!-- Las fotos se colocan aquí como slides -->
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(0)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.05.00 PM.jpeg" alt="Recuerdo Gladis 1" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(1)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.12 PM.jpeg" alt="Recuerdo Gladis 2" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(2)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.12 PM (1).jpeg" alt="Recuerdo Gladis 3" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(3)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM.jpeg" alt="Recuerdo Gladis 4" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(4)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (1).jpeg" alt="Recuerdo Gladis 5" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(5)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (2).jpeg" alt="Recuerdo Gladis 6" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(6)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (3).jpeg" alt="Recuerdo Gladis 7" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(7)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (4).jpeg" alt="Recuerdo Gladis 8" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(8)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (5).jpeg" alt="Recuerdo Gladis 9" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+              <div class="carousel-slide" onclick="openLightboxFromCarousel(9)">
+                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.14 PM.jpeg" alt="Recuerdo Gladis 10" loading="lazy">
+                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Controles de navegación -->
+          <button type="button" class="carousel-btn prev-btn" id="carousel-prev" aria-label="Foto anterior">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <button type="button" class="carousel-btn next-btn" id="carousel-next" aria-label="Foto siguiente">
+            <i data-lucide="chevron-right"></i>
+          </button>
+          
+          <!-- Puntos indicadores -->
+          <div class="carousel-dots" id="carousel-dots"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección RSVP (Confirmación de Asistencia) -->
+    <section class="section rsvp-section" id="confirmar">
+      <div class="section-container">
+        
+        <div class="rsvp-card animate-on-scroll">
+          <div class="decor-corner top-left small"></div>
+          <div class="decor-corner top-right small"></div>
+          <div class="decor-corner bottom-left small"></div>
+          <div class="decor-corner bottom-right small"></div>
+
+          <h2 class="section-title text-gold">Confirmar Asistencia</h2>
+          <div class="gold-line"></div>
+          <p class="rsvp-instructions">Busca tu nombre en la lista de invitados para realizar tu confirmación:</p>
+
+          <!-- Aviso de Fecha Límite -->
+          <div class="rsvp-deadline-notice animate-on-scroll">
+            <i data-lucide="info"></i>
+            <span>Confirmaciones abiertas hasta el <strong>Domingo 14 de Junio de 2026</strong></span>
+          </div>
+
+          <!-- Buscador con sugerencias autocompletables -->
+          <div class="search-container">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="rsvp-search-input" autocomplete="off" placeholder="Escribe tu nombre y apellido...">
+              <button type="button" id="rsvp-clear-btn" class="clear-btn hidden" title="Limpiar búsqueda">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+            <!-- Lista desplegable de sugerencias -->
+            <ul id="rsvp-suggestions-list" class="suggestions-list hidden"></ul>
+          </div>
+
+          <!-- Indicador de carga -->
+          <div id="rsvp-loader" class="loader-container hidden">
+            <div class="spinner"></div>
+            <p>Buscando en la lista de invitados...</p>
+          </div>
+
+          <!-- Contenedor para verificación de PIN (Código de Acceso) -->
+          <div id="rsvp-pin-container" class="rsvp-pin-container hidden">
+            <label for="rsvp-pin-input" class="form-label-bold text-gold"><i data-lucide="lock" class="row-icon"></i>Código de Confirmación</label>
+            <p class="pin-instructions-text">Por seguridad, ingresa el código de acceso de 4 dígitos enviado con tu invitación:</p>
+            <div class="pin-input-wrapper">
+              <input type="tel" id="rsvp-pin-input" maxlength="4" placeholder="••••" autocomplete="off">
+              <button type="button" id="rsvp-verify-pin-btn" class="btn-primary">Verificar</button>
+            </div>
+            <p id="rsvp-pin-error" class="pin-error-text hidden"><i data-lucide="alert-triangle"></i> Código incorrecto. Por favor, intenta de nuevo.</p>
+          </div>
+
+          <!-- Tarjeta de Información y Confirmación de Asistencia -->
+          <div id="rsvp-details-form" class="rsvp-details-form hidden">
+            <div class="guest-info-box">
+              <div class="info-row">
+                <span class="info-label">Invitado:</span>
+                <span class="info-value text-highlight" id="guest-name-val">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label"><i data-lucide="door-open" class="row-icon"></i> Mesa Asignada:</span>
+                <span class="info-value" id="guest-table-val">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label"><i data-lucide="users" class="row-icon"></i> Pases Asignados:</span>
+                <span class="info-value" id="guest-passes-val">-</span>
+              </div>
+            </div>
+
+            <!-- Formulario de Respuesta -->
+            <form id="rsvp-form" onsubmit="submitRSVP(event)">
+              <!-- Opciones de Asistencia -->
+              <div class="form-group">
+                <label class="form-label-bold">¿Asistirás al evento?</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="attendance" value="true" required>
+                    <span class="radio-custom"></span>
+                    <span class="radio-text"><i data-lucide="check-circle" class="option-icon"></i> Sí, asistiré</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="attendance" value="false">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text"><i data-lucide="x-circle" class="option-icon"></i> No podré asistir</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Selector de Asistentes Reales (Visible solo si dice que sí) -->
+              <div class="form-group id-attendees-group hidden" id="attendees-selector-group">
+                <label for="asistentes_reales" class="form-label">¿Cuántas personas asistirán en total?</label>
+                <div class="select-wrapper">
+                  <select id="asistentes_reales" name="asistentes_reales" class="form-select">
+                    <!-- Rellenado dinámicamente -->
+                  </select>
+                  <i data-lucide="chevron-down" class="select-chevron"></i>
+                </div>
+                <small class="form-help">Máximo permitido según tus pases.</small>
+              </div>
+
+              <!-- Comentarios o Felicitación -->
+              <div class="form-group">
+                <label for="rsvp-comment" class="form-label">Escribe un mensaje para Doña Gladis (Opcional):</label>
+                <textarea id="rsvp-comment" name="comment" rows="3" class="form-textarea" placeholder="¡Déjale una felicitación o un mensaje cariñoso!"></textarea>
+              </div>
+
+              <!-- Botón de Envío -->
+              <button type="submit" id="rsvp-submit-btn" class="btn-primary btn-full">
+                <span>Confirmar Mi Asistencia</span>
+                <i data-lucide="send" class="btn-icon"></i>
+              </button>
+            </form>
+          </div>
+
+          <!-- Mensaje de Confirmación Completada con Éxito -->
+          <div id="rsvp-success-message" class="rsvp-success-message hidden">
+            <div class="success-icon-wrapper">
+              <i data-lucide="sparkles" class="success-icon-sparkle"></i>
+              <i data-lucide="check" class="success-icon-check"></i>
+            </div>
+            <h3 class="success-title">¡Confirmación Guardada!</h3>
+            <p class="success-text" id="success-message-text">Muchas gracias por confirmar. Tus datos se han guardado con éxito.</p>
+            
+            <div id="success-summary-box" class="success-summary-box">
+              <!-- Rellenado dinámicamente -->
+            </div>
+
+            <div class="success-actions">
+              <button type="button" class="btn-secondary" onclick="resetRSVPForm()">
+                <i data-lucide="rotate-ccw" class="btn-icon"></i> Modificar mi confirmación
+              </button>
+              <button type="button" class="btn-outline" onclick="clearSelectedGuest()">
+                <i data-lucide="log-out" class="btn-icon"></i> Consultar otra invitación / Salir
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Lightbox Modal de la Galería -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Cerrar galeria">&times;</button>
+    <button class="lightbox-prev" id="lightbox-prev" aria-label="Foto anterior">&#10094;</button>
+    <img class="lightbox-content" id="lightbox-img" src="" alt="Ampliación de foto">
+    <button class="lightbox-next" id="lightbox-next" aria-label="Foto siguiente">&#10095;</button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-quote">"Celebrando una hermosa vida llena de amor, sonrisas y bendiciones."</p>
+    <p class="footer-title">Gladis Elizabeth Estrada</p>
+    <div class="footer-divider"></div>
+    <p class="footer-copyright">&copy; 2026 - Con cariño para Doña Gladis</p>
+  </footer>
+
+  <!-- Archivo JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>

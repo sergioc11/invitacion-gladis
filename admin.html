@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrador de Invitados - 70 Años de Doña Gladis</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Estilos Globales Compartidos -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Pantalla de Bloqueo / Control de Acceso -->
+  <div id="admin-lock-screen" class="admin-lock-overlay">
+    <div class="admin-lock-card">
+      <div class="admin-lock-icon">
+        <i data-lucide="lock"></i>
+      </div>
+      <h2 class="admin-lock-title">Panel Administrativo</h2>
+      <p class="admin-lock-desc">Introduce la clave de acceso de administrador para ingresar al listado:</p>
+      
+      <div class="form-group">
+        <input type="password" id="admin-pass-input" class="form-textarea" placeholder="Contraseña de Administrador" style="text-align: center; margin-bottom: 15px; resize: none; padding: 12px;" rows="1">
+        <p id="admin-login-error" class="pin-error-text hidden" style="justify-content: center; margin-bottom: 15px;"><i data-lucide="alert-triangle"></i> Clave incorrecta. Inténtalo de nuevo.</p>
+        <button type="button" id="admin-login-btn" class="btn-primary btn-full">Ingresar al Panel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido del Panel de Administración (Oculto hasta autenticarse) -->
+  <div id="admin-dashboard" class="admin-container hidden">
+    
+    <!-- Encabezado -->
+    <header class="admin-header">
+      <div class="admin-header-title">
+        <h1>Control de Invitados</h1>
+        <p>Gestiona la lista, mesas, pases y consulta las confirmaciones de asistencia.</p>
+      </div>
+      <button type="button" class="btn-secondary" onclick="logoutAdmin()">
+        <i data-lucide="log-out" class="btn-icon"></i> Cerrar Panel
+      </button>
+    </header>
+
+    <!-- Indicador de Carga del Panel -->
+    <div id="admin-main-loader" class="loader-container hidden">
+      <div class="spinner"></div>
+      <p>Cargando lista de invitados...</p>
+    </div>
+
+    <!-- Cuadrícula de Estadísticas (KPIs) -->
+    <section class="admin-stats-grid">
+      
+      <!-- Total Invitados -->
+      <div class="admin-stats-card">
+        <div class="admin-stats-icon icon-blue">
+          <i data-lucide="users"></i>
+        </div>
+        <div class="admin-stats-info">
+          <span class="admin-stats-val" id="stat-total">0</span>
+          <span class="admin-stats-label">Invitados</span>
+        </div>
+      </div>
+
+      <!-- Confirmados (Sí) -->
+      <div class="admin-stats-card">
+        <div class="admin-stats-icon icon-green">
+          <i data-lucide="check-circle"></i>
+        </div>
+        <div class="admin-stats-info">
+          <span class="admin-stats-val" id="stat-confirmed">0</span>
+          <span class="admin-stats-label">Confirmados (Sí)</span>
+        </div>
+      </div>
+
+      <!-- Total Personas que Asistirán -->
+      <div class="admin-stats-card">
+        <div class="admin-stats-icon icon-gold">
+          <i data-lucide="user-check"></i>
+        </div>
+        <div class="admin-stats-info">
+          <span class="admin-stats-val" id="stat-plates">0</span>
+          <span class="admin-stats-label">Personas que Asistirán</span>
+        </div>
+      </div>
+
+      <!-- No Asistirán (No) -->
+      <div class="admin-stats-card">
+        <div class="admin-stats-icon icon-red">
+          <i data-lucide="x-circle"></i>
+        </div>
+        <div class="admin-stats-info">
+          <span class="admin-stats-val" id="stat-declined">0</span>
+          <span class="admin-stats-label">No Asistirán</span>
+        </div>
+      </div>
+
+      <!-- Pendientes -->
+      <div class="admin-stats-card">
+        <div class="admin-stats-icon icon-gray">
+          <i data-lucide="help-circle"></i>
+        </div>
+        <div class="admin-stats-info">
+          <span class="admin-stats-val" id="stat-pending">0</span>
+          <span class="admin-stats-label">Pendientes</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Barra de Controles: Búsqueda, Filtros y Agregar -->
+    <div class="admin-controls">
+      <div class="admin-search-wrapper">
+        <div class="admin-search-box">
+          <i data-lucide="search" class="admin-search-icon"></i>
+          <input type="text" id="admin-search-input" placeholder="Buscar invitado por nombre...">
+        </div>
+        
+        <select id="admin-filter-status" class="admin-filter-select">
+          <option value="all">Todos los estados</option>
+          <option value="attending">Confirmados (Sí)</option>
+          <option value="declined">No Asistirán (No)</option>
+          <option value="pending">Pendientes de Respuesta</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-primary" onclick="openAddGuestModal()">
+        <i data-lucide="user-plus" class="btn-icon"></i> Agregar Invitado
+      </button>
+    </div>
+
+    <!-- Tabla de Datos -->
+    <div class="admin-table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Mesa</th>
+            <th>PIN</th>
+            <th style="text-align: center;">Pases Totales</th>
+            <th style="text-align: center;">Estado</th>
+            <th style="text-align: center;">Asisten Reales</th>
+            <th style="text-align: center;">Mensaje</th>
+            <th style="text-align: center;">Enviar Invitación</th>
+            <th style="text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="admin-table-body">
+          <!-- Rellenado dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- MODAL: AGREGAR O EDITAR INVITADO -->
+  <div id="admin-guest-modal" class="admin-modal-overlay">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <h3 id="modal-title">Agregar Nuevo Invitado</h3>
+        <button type="button" class="btn-modal-close" onclick="closeGuestModal()">&times;</button>
+      </div>
+      
+      <form id="admin-guest-form" onsubmit="saveGuest(event)">
+        <input type="hidden" id="modal-guest-id">
+        
+        <div class="admin-modal-body">
+          
+          <!-- Nombre Completo -->
+          <div class="form-group">
+            <label for="modal-guest-name" class="form-label">Nombre Completo del Invitado:</label>
+            <input type="text" id="modal-guest-name" class="form-textarea" style="resize: none;" placeholder="Ej: Juan Pérez y Familia" required>
+          </div>
+          
+          <!-- Fila: Pases y Mesa -->
+          <div class="admin-form-row">
+            <!-- Pases Totales -->
+            <div class="form-group">
+              <label for="modal-guest-passes" class="form-label">Pases Permitidos:</label>
+              <input type="number" id="modal-guest-passes" class="form-textarea" style="resize: none;" min="1" max="50" value="1" required>
+            </div>
+            
+            <!-- Mesa Asignada -->
+            <div class="form-group">
+              <label for="modal-guest-table" class="form-label">Mesa Asignada (Opcional):</label>
+              <input type="text" id="modal-guest-table" class="form-textarea" style="resize: none;" placeholder="Ej: Mesa 4, Honor, etc.">
+            </div>
+          </div>
+          
+          <!-- Código PIN de Acceso -->
+          <div class="form-group">
+            <label for="modal-guest-pin" class="form-label">Código PIN (4 Dígitos):</label>
+            <div class="admin-pin-wrapper">
+              <input type="text" id="modal-guest-pin" class="form-textarea" style="resize: none; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px;" maxlength="4" placeholder="Ej: 1234" required>
+              <button type="button" class="btn-generator" onclick="generateRandomPIN()">Generar PIN</button>
+            </div>
+            <small class="form-help">Código de 4 números necesario para que el invitado confirme asistencia.</small>
+          </div>
+
+        </div>
+        
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeGuestModal()">Cancelar</button>
+          <button type="submit" id="btn-save-submit" class="btn-primary">Guardar Invitado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: LEER COMENTARIO / MENSAJE -->
+  <div id="admin-comment-modal" class="admin-modal-overlay">
+    <div class="admin-modal-box" style="max-width: 450px;">
+      <div class="admin-modal-header">
+        <h3>Mensaje de Felicitación</h3>
+        <button type="button" class="btn-modal-close" onclick="closeCommentModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body" style="padding: 30px;">
+        <div class="guest-info-box" style="margin-bottom: 20px; border-left-color: var(--color-burgundy);">
+          <div class="info-row">
+            <span class="info-label">De:</span>
+            <span class="info-value" id="comment-modal-author">-</span>
+          </div>
+        </div>
+        <p id="comment-modal-text" style="font-style: italic; color: var(--color-text-dark); line-height: 1.7; white-space: pre-line; background-color: var(--color-bg-primary); padding: 15px; border-radius: 8px; border: 1px dashed var(--color-gold-light);"></p>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-primary" onclick="closeCommentModal()">Cerrar Mensaje</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lógica Administrativa -->
+  <script src="admin.js"></script>
+</body>
+</html>
