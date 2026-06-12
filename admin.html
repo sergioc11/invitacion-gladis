@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrador de Invitados - 70 Años de Doña Gladis</title>
+  <title>Administrador de Invitados - 70 Años de Mamá Gladis</title>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -150,6 +150,7 @@
         <thead>
           <tr>
             <th>Nombre Completo</th>
+            <th>Teléfono</th>
             <th>Mesa</th>
             <th>PIN</th>
             <th style="text-align: center;">Pases Totales</th>
@@ -186,7 +187,14 @@
             <label for="modal-guest-name" class="form-label">Nombre Completo del Invitado:</label>
             <input type="text" id="modal-guest-name" class="form-textarea" style="resize: none;" placeholder="Ej: Juan Pérez y Familia" required>
           </div>
-          
+
+          <!-- Teléfono / WhatsApp -->
+          <div class="form-group">
+            <label for="modal-guest-phone" class="form-label">Teléfono WhatsApp (Opcional):</label>
+            <input type="text" id="modal-guest-phone" class="form-textarea" style="resize: none;" placeholder="Ej: 50212345678 (con código de país, sin + ni espacios)">
+            <small class="form-help">Incluye el código de país para poder enviar la invitación con un solo clic. Ej: Guatemala 502, México 52.</small>
+          </div>
+
           <!-- Fila: Pases y Mesa -->
           <div class="admin-form-row">
             <!-- Pases Totales -->
@@ -202,6 +210,26 @@
             </div>
           </div>
           
+          <!-- Fila: Estado de Confirmación y Asistentes Reales -->
+          <div class="admin-form-row">
+            <!-- Estado de Confirmación -->
+            <div class="form-group">
+              <label for="modal-guest-status" class="form-label">Estado de Confirmación:</label>
+              <select id="modal-guest-status" class="form-textarea" style="resize: none;" onchange="toggleAttendeesField()">
+                <option value="pending">Pendiente de respuesta</option>
+                <option value="true">Confirmado (Sí asistirá)</option>
+                <option value="false">No asistirá</option>
+              </select>
+            </div>
+
+            <!-- Asistentes Reales -->
+            <div class="form-group" id="modal-attendees-group">
+              <label for="modal-guest-attendees" class="form-label">Asistentes Reales:</label>
+              <input type="number" id="modal-guest-attendees" class="form-textarea" style="resize: none;" min="0" value="0">
+              <small class="form-help">Cuántas personas asistirán realmente (de los pases permitidos).</small>
+            </div>
+          </div>
+
           <!-- Código PIN de Acceso -->
           <div class="form-group">
             <label for="modal-guest-pin" class="form-label">Código PIN (4 Dígitos):</label>
@@ -245,6 +273,6 @@
   </div>
 
   <!-- Lógica Administrativa -->
-  <script src="admin.js"></script>
+  <script src="admin.js?v=2"></script>
 </body>
 </html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enviar Invitaciones - 70 Años de Mamá Gladis</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos Globales Compartidos -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Estilos específicos de esta página (mobile-first) -->
+  <style>
+    .send-page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 14px 60px;
+    }
+
+    .send-header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .send-header h1 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      color: var(--color-burgundy);
+      margin-bottom: 4px;
+    }
+    .send-header p {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Barra de progreso / contador */
+    .send-stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .send-stat-box {
+      flex: 1;
+      background: #FFF;
+      border: 1px solid rgba(197, 168, 128, 0.25);
+      border-radius: 12px;
+      padding: 10px 6px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .send-stat-val {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--color-burgundy);
+      line-height: 1.1;
+    }
+    .send-stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-muted);
+    }
+
+    /* Buscador */
+    .send-search-box {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .send-search-box input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 1.5px solid rgba(197, 168, 128, 0.4);
+      border-radius: 12px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      background: #FFF;
+    }
+    .send-search-box input:focus {
+      outline: none;
+      border-color: var(--color-gold);
+    }
+    .send-search-box .search-ic {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--color-gold);
+    }
+
+    /* Filtro rápido */
+    .send-filter {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid rgba(197, 168, 128, 0.4);
+      border-radius: 12px;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      background: #FFF;
+      margin-bottom: 18px;
+    }
+
+    /* Tarjeta de invitado */
+    .guest-card {
+      background: #FFF;
+      border: 1px solid rgba(197, 168, 128, 0.25);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s, opacity 0.2s;
+    }
+    .guest-card.is-sent {
+      border-color: #A5D6A7;
+      background: #F6FBF6;
+    }
+
+    .guest-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .guest-card-name {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--color-burgundy);
+      line-height: 1.25;
+    }
+    .guest-card-sentflag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #2E7D32;
+      white-space: nowrap;
+    }
+    .guest-card-sentflag.hidden { display: none; }
+    .guest-card-sentflag i { width: 14px; height: 14px; }
+
+    .guest-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-bottom: 14px;
+      font-size: 0.82rem;
+      color: var(--color-text-dark);
+    }
+    .guest-card-meta .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .guest-card-meta i { width: 14px; height: 14px; color: var(--color-gold); }
+    .meta-muted { color: var(--color-text-muted); font-style: italic; }
+
+    /* Badges de estado */
+    .send-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .send-badge i { width: 12px; height: 12px; }
+    .badge-yes { background: #E8F5E9; color: #2E7D32; }
+    .badge-no { background: #FFEBEE; color: #C62828; }
+    .badge-wait { background: #F5F5F5; color: #757575; }
+
+    /* Botones de acción de la tarjeta */
+    .guest-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-send-wa {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #25D366;
+      color: #FFF;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-send-wa:active { background: #1da851; }
+    .btn-send-wa i { width: 18px; height: 18px; }
+
+    .btn-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFF;
+      border: 1.5px solid rgba(197, 168, 128, 0.5);
+      border-radius: 10px;
+      padding: 11px 13px;
+      color: var(--color-text-dark);
+      cursor: pointer;
+    }
+    .btn-mark i { width: 18px; height: 18px; }
+    .btn-mark.active { background: #E8F5E9; border-color: #A5D6A7; color: #2E7D32; }
+
+    .send-empty {
+      text-align: center;
+      color: var(--color-text-muted);
+      font-style: italic;
+      padding: 40px 20px;
+    }
+
+    /* Pantalla de bloqueo reutiliza estilos de admin */
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla de Bloqueo / Control de Acceso -->
+  <div id="send-lock-screen" class="admin-lock-overlay">
+    <div class="admin-lock-card">
+      <div class="admin-lock-icon">
+        <i data-lucide="send"></i>
+      </div>
+      <h2 class="admin-lock-title">Enviar Invitaciones</h2>
+      <p class="admin-lock-desc">Introduce la clave de acceso para ver la lista de invitados y enviar las invitaciones:</p>
+
+      <div class="form-group">
+        <input type="password" id="send-pass-input" class="form-textarea" placeholder="Contraseña de acceso" style="text-align: center; margin-bottom: 15px; resize: none; padding: 12px;" rows="1">
+        <p id="send-login-error" class="pin-error-text hidden" style="justify-content: center; margin-bottom: 15px;"><i data-lucide="alert-triangle"></i> Clave incorrecta. Inténtalo de nuevo.</p>
+        <button type="button" id="send-login-btn" class="btn-primary btn-full">Ingresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido (oculto hasta autenticarse) -->
+  <div id="send-dashboard" class="send-page hidden">
+
+    <header class="send-header">
+      <h1>Enviar Invitaciones</h1>
+      <p>70 Años de Mamá Gladis · Toca el botón verde para enviar por WhatsApp</p>
+    </header>
+
+    <!-- Contador -->
+    <section class="send-stats">
+      <div class="send-stat-box">
+        <span class="send-stat-val" id="send-stat-total">0</span>
+        <span class="send-stat-label">Invitados</span>
+      </div>
+      <div class="send-stat-box">
+        <span class="send-stat-val" id="send-stat-sent" style="color:#2E7D32;">0</span>
+        <span class="send-stat-label">Enviados</span>
+      </div>
+      <div class="send-stat-box">
+        <span class="send-stat-val" id="send-stat-pending">0</span>
+        <span class="send-stat-label">Por enviar</span>
+      </div>
+    </section>
+
+    <!-- Buscador -->
+    <div class="send-search-box">
+      <i data-lucide="search" class="search-ic"></i>
+      <input type="text" id="send-search-input" placeholder="Buscar invitado por nombre...">
+    </div>
+
+    <!-- Filtro -->
+    <select id="send-filter" class="send-filter">
+      <option value="all">Mostrar todos</option>
+      <option value="pending">Solo por enviar</option>
+      <option value="sent">Solo enviados</option>
+      <option value="withphone">Solo con teléfono</option>
+      <option value="nophone">Solo sin teléfono</option>
+    </select>
+
+    <!-- Indicador de carga -->
+    <div id="send-loader" class="loader-container">
+      <div class="spinner"></div>
+      <p>Cargando lista de invitados...</p>
+    </div>
+
+    <!-- Lista de invitados -->
+    <div id="send-list"></div>
+
+  </div>
+
+  <script src="enviar.js?v=4"></script>
+</body>
+</html>

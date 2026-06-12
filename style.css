@@ -1,5 +1,5 @@
 /* ==========================================================================
-   DISEÑO Y SISTEMA DE ESTILOS - 70 AÑOS DE DOÑA GLADIS
+   DISEÑO Y SISTEMA DE ESTILOS - 70 AÑOS DE MAMÁ GLADIS
    ========================================================================== */
 
 /* Variables de Diseño (Paleta de Oro Rosa y Pizarra Moderna) */
@@ -1863,7 +1863,7 @@ body.no-scroll {
 
 /* Dashboard Layout */
 .admin-container {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -2028,7 +2028,7 @@ body.no-scroll {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
 }
 
 .admin-table th {
@@ -2037,14 +2037,14 @@ body.no-scroll {
   font-family: var(--font-serif);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  padding: 16px 20px;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  padding: 12px 12px;
   border-bottom: 1.5px solid var(--color-gold-light);
 }
 
 .admin-table td {
-  padding: 16px 20px;
+  padding: 12px 12px;
   border-bottom: 1px solid #ECEBE6;
   color: var(--color-text-dark);
   vertical-align: middle;

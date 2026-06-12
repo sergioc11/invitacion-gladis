@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LÓGICA DEL PANEL DE ADMINISTRACIÓN - 70 AÑOS DE DOÑA GLADIS
+   LÓGICA DEL PANEL DE ADMINISTRACIÓN - 70 AÑOS DE MAMÁ GLADIS
    ========================================================================== */
 
 // 1. CONFIGURACIÓN DE CONEXIÓN A SUPABASE (COMPARTIDA CON APP.JS)
@@ -35,7 +35,7 @@ if (isSupabaseConfigured) {
 
 // Datos de prueba locales si no está conectado Supabase
 let localAdminMock = [
-  { id: "mock-1", nombre_completo: "Sergio Castellanos", codigo_acceso: "1234", numero_mesa: "Mesa 1", pases_totales: 3, confirmado: true, asistentes_confirmados: 2, comentarios: "¡Felicidades Doña Gladis, un fuerte abrazo!", fecha_confirmacion: "2026-06-09T14:10:00Z" },
+  { id: "mock-1", nombre_completo: "Sergio Castellanos", telefono: "50212345678", codigo_acceso: "1234", numero_mesa: "Mesa 1", pases_totales: 3, confirmado: true, asistentes_confirmados: 2, comentarios: "¡Felicidades Mamá Gladis, un fuerte abrazo!", fecha_confirmacion: "2026-06-09T14:10:00Z" },
   { id: "mock-2", nombre_completo: "María de los Ángeles Estrada", codigo_acceso: "5678", numero_mesa: null, pases_totales: 2, confirmado: null, asistentes_confirmados: 0, comentarios: "" },
   { id: "mock-3", nombre_completo: "Juan Carlos Pérez", codigo_acceso: "4321", numero_mesa: "Mesa 3", pases_totales: 4, confirmado: false, asistentes_confirmados: 0, comentarios: "Lamentablemente no podré ir por un viaje, saludos." },
   { id: "mock-4", nombre_completo: "Gladis Elizabeth Ruano Estrada", codigo_acceso: "7070", numero_mesa: "Mesa de Honor", pases_totales: 1, confirmado: null, asistentes_confirmados: 0, comentarios: "" },
@@ -45,6 +45,70 @@ let localAdminMock = [
 // Variables de Estado
 let allGuests = [];
 let filteredGuests = [];
+
+// Detección de dispositivo y referencia a la ÚNICA pestaña de WhatsApp Web.
+// En computadora reutilizamos esa pestaña para evitar la pantalla intermedia
+// de api.whatsapp.com y que se "bote" la sesión al abrir pestañas nuevas.
+const IS_MOBILE = /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry/i.test(navigator.userAgent);
+let whatsappWindowRef = null;
+
+function waSendDesktop(url) {
+  // En celular dejamos que el enlace abra la app nativa (no interceptamos)
+  if (IS_MOBILE) return true;
+  // En computadora reutilizamos una sola pestaña de WhatsApp Web
+  if (whatsappWindowRef && !whatsappWindowRef.closed) {
+    whatsappWindowRef.location.href = url;
+    whatsappWindowRef.focus();
+  } else {
+    whatsappWindowRef = window.open(url, "whatsapp_web_panel");
+  }
+  return false; // evita que el enlace abra además su propia pestaña
+}
+
+// ==========================================================================
+// MARCA DE "INVITACIÓN ENVIADA" (guardada en la base de datos)
+// ==========================================================================
+async function setSentFlag(guestId, sent) {
+  const guest = allGuests.find(g => g.id === guestId);
+  if (!guest) return;
+
+  // Actualizar en memoria de inmediato para que la tabla responda al instante
+  guest.invitacion_enviada = sent;
+  applyFilters();
+
+  try {
+    if (isSupabaseConfigured && supabaseClient) {
+      const { error } = await supabaseClient
+        .from('invitados')
+        .update({ invitacion_enviada: sent })
+        .eq('id', guestId);
+
+      if (error) throw error;
+    } else {
+      const idx = localAdminMock.findIndex(g => g.id === guestId);
+      if (idx !== -1) localAdminMock[idx].invitacion_enviada = sent;
+    }
+  } catch (e) {
+    console.error("Error al guardar la marca de invitación enviada:", e);
+    guest.invitacion_enviada = !sent;
+    applyFilters();
+    alert("No se pudo guardar la marca de enviado en la base de datos. Verifica tu conexión.");
+  }
+}
+
+function toggleSentAdmin(guestId) {
+  const guest = allGuests.find(g => g.id === guestId);
+  setSentFlag(guestId, !(guest && guest.invitacion_enviada === true));
+}
+
+// Clic en el botón de WhatsApp: marca como enviada (en la BD) y abre WhatsApp
+function sendInviteAdmin(guestId, url) {
+  const guest = allGuests.find(g => g.id === guestId);
+  if (guest && guest.invitacion_enviada !== true) {
+    setSentFlag(guestId, true);
+  }
+  return waSendDesktop(url);
+}
 
 // ==========================================================================
 // INICIALIZACIÓN Y CONTROL DE ACCESO (LOGIN)
@@ -233,7 +297,7 @@ function renderTable(guests) {
   if (guests.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; color: var(--color-text-muted); font-style: italic; padding: 30px;">
+        <td colspan="10" style="text-align: center; color: var(--color-text-muted); font-style: italic; padding: 30px;">
           No se encontraron invitados con los criterios de búsqueda.
         </td>
       </tr>
@@ -254,9 +318,17 @@ function renderTable(guests) {
       badgeHtml = `<span class="admin-badge badge-pending"><i data-lucide="help-circle"></i> Pendiente</span>`;
     }
     
+    // Marca de invitación enviada (registrada en la base de datos)
+    const isSentFlag = g.invitacion_enviada === true;
+
+    // Teléfono
+    const telefonoText = g.telefono && String(g.telefono).trim() !== ""
+      ? g.telefono
+      : `<span style="color:var(--color-text-muted); font-style:italic;">—</span>`;
+
     // Mesa
-    const mesaText = g.numero_mesa && g.numero_mesa.trim() !== "" 
-      ? g.numero_mesa 
+    const mesaText = g.numero_mesa && g.numero_mesa.trim() !== ""
+      ? g.numero_mesa
       : `<span style="color:var(--color-text-muted); font-style:italic;">Por asignarse</span>`;
       
     // Asistentes reales confirmados
@@ -279,7 +351,7 @@ function renderTable(guests) {
     // Enlace personalizado: lleva el código embebido para que la invitación
     // reconozca automáticamente al invitado al hacer clic (sin teclear el código).
     const personalInviteUrl = `${inviteUrl}?inv=${encodeURIComponent(g.id)}&pin=${encodeURIComponent(g.codigo_acceso)}`;
-    const shareMessage = `Hola *${g.nombre_completo}*, queremos invitarte de manera muy especial a celebrar los *70 Años de Doña Gladis*. 🌸
+    const shareMessage = `Hola *${g.nombre_completo}*, queremos invitarte de manera muy especial a celebrar los *70 Años de Mamá Gladis*. 🌸
 
 Solo da clic en tu enlace personal para ver todos los detalles y confirmar tu asistencia. ¡La invitación te reconocerá automáticamente!
 👉 ${personalInviteUrl}
@@ -289,9 +361,38 @@ Solo da clic en tu enlace personal para ver todos los detalles y confirmar tu as
 ¡Esperamos contar con tu valiosa presencia!`;
 
     const escapedShareMessage = shareMessage.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
-    
+
+    // Construir enlace de WhatsApp según el dispositivo:
+    // - En CELULAR usamos wa.me, que abre la app nativa de WhatsApp.
+    // - En COMPUTADORA usamos web.whatsapp.com/send, que entra DIRECTO a
+    //   WhatsApp Web sin preguntar "¿abrir la aplicación?" (si no tienes la app
+    //   de escritorio, igual funciona porque va a la web).
+    // En ambos casos el mensaje y el destinatario van prellenados.
+    const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry/i.test(navigator.userAgent);
+    const phoneDigits = g.telefono ? String(g.telefono).replace(/\D/g, "") : "";
+    const encodedMsg = encodeURIComponent(shareMessage);
+
+    let whatsappUrl;
+    if (phoneDigits) {
+      // Móvil: whatsapp:// abre la APP instalada directo, sin página intermedia.
+      // Computadora: web.whatsapp.com abre WhatsApp Web directo.
+      whatsappUrl = isMobileDevice
+        ? `whatsapp://send?phone=${phoneDigits}&text=${encodedMsg}`
+        : `https://web.whatsapp.com/send?phone=${phoneDigits}&text=${encodedMsg}`;
+    } else {
+      // Sin teléfono no se puede prellenar destinatario; abrir selector de contacto
+      whatsappUrl = isMobileDevice
+        ? `whatsapp://send?text=${encodedMsg}`
+        : `https://api.whatsapp.com/send?text=${encodedMsg}`;
+    }
+
+    const whatsappTitle = phoneDigits
+      ? "Enviar invitación por WhatsApp"
+      : "Compartir por WhatsApp (elegir contacto)";
+
     tr.innerHTML = `
       <td class="td-guest-name">${g.nombre_completo}</td>
+      <td>${telefonoText}</td>
       <td>${mesaText}</td>
       <td class="td-guest-pin">${g.codigo_acceso}</td>
       <td style="text-align: center; font-weight: 600;">${g.pases_totales}</td>
@@ -299,13 +400,16 @@ Solo da clic en tu enlace personal para ver todos los detalles y confirmar tu as
       <td style="text-align: center; font-weight: 500;">${asistentesText}</td>
       <td style="text-align: center;">${commentHtml}</td>
       <td style="text-align: center;">
-        <div style="display: flex; gap: 8px; justify-content: center;">
+        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
           <button type="button" class="btn-action btn-edit-action" onclick="copyToClipboard('${escapedShareMessage}', this)" title="Copiar mensaje de invitación">
             <i data-lucide="copy" style="width:14px; height:14px;"></i>
           </button>
-          <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(shareMessage)}" target="_blank" class="btn-action" style="color: #2E7D32; border: 1.5px solid #A5D6A7; background-color: #E8F5E9;" title="Compartir por WhatsApp">
+          <a href="${whatsappUrl}" onclick="return sendInviteAdmin('${g.id}', '${whatsappUrl}')" target="_blank" rel="noopener" class="btn-action" style="color: #2E7D32; border: 1.5px solid #A5D6A7; background-color: #E8F5E9;" title="${whatsappTitle}">
             <i data-lucide="send" style="width:14px; height:14px;"></i>
           </a>
+          <button type="button" class="btn-action" onclick="toggleSentAdmin('${g.id}')" title="${isSentFlag ? 'Invitación enviada (clic para desmarcar)' : 'Marcar como enviada'}" style="${isSentFlag ? 'color: #2E7D32; border: 1.5px solid #A5D6A7; background-color: #E8F5E9;' : 'color: #9E9E9E;'}">
+            <i data-lucide="${isSentFlag ? 'check-circle' : 'circle'}" style="width:14px; height:14px;"></i>
+          </button>
         </div>
       </td>
       <td style="text-align: center;">
@@ -339,7 +443,7 @@ function downloadReport() {
   }
 
   // Encabezados de las columnas solicitadas
-  const headers = ["No.", "Nombre Completo", "Mesa", "Pases Totales", "Estado", "Asistentes Reales"];
+  const headers = ["No.", "Nombre Completo", "Teléfono", "Mesa", "Pases Totales", "Estado", "Asistentes Reales", "Invitación Enviada"];
 
   // Helper para escapar valores en formato CSV
   const escapeCSV = (value) => {
@@ -353,6 +457,7 @@ function downloadReport() {
 
   // Construir filas a partir de la lista completa (ordenada por nombre)
   const rows = allGuests.map((g, index) => {
+    const telefono = (g.telefono && String(g.telefono).trim() !== "") ? g.telefono : "";
     const mesa = (g.numero_mesa && g.numero_mesa.trim() !== "") ? g.numero_mesa : "Por asignarse";
 
     let estado;
@@ -370,10 +475,12 @@ function downloadReport() {
     return [
       escapeCSV(index + 1),
       escapeCSV(g.nombre_completo),
+      escapeCSV(telefono),
       escapeCSV(mesa),
       escapeCSV(g.pases_totales),
       escapeCSV(estado),
-      escapeCSV(asistentes)
+      escapeCSV(asistentes),
+      escapeCSV(g.invitacion_enviada === true ? "Sí" : "No")
     ].join(",");
   });
 
@@ -404,9 +511,15 @@ function openAddGuestModal() {
   
   // Limpiar campos
   document.getElementById("modal-guest-name").value = "";
+  document.getElementById("modal-guest-phone").value = "";
   document.getElementById("modal-guest-passes").value = "1";
   document.getElementById("modal-guest-table").value = "";
-  
+
+  // Estado y asistentes reales por defecto (invitado nuevo = pendiente)
+  document.getElementById("modal-guest-status").value = "pending";
+  document.getElementById("modal-guest-attendees").value = "0";
+  toggleAttendeesField();
+
   // Generar PIN aleatorio por defecto
   generateRandomPIN();
   
@@ -426,10 +539,25 @@ function openEditGuestModal(guestId) {
   
   // Poblar campos
   document.getElementById("modal-guest-name").value = guest.nombre_completo;
+  document.getElementById("modal-guest-phone").value = guest.telefono || "";
   document.getElementById("modal-guest-passes").value = guest.pases_totales;
   document.getElementById("modal-guest-table").value = guest.numero_mesa || "";
   document.getElementById("modal-guest-pin").value = guest.codigo_acceso;
-  
+
+  // Poblar estado de confirmación
+  const statusSelect = document.getElementById("modal-guest-status");
+  if (guest.confirmado === true) {
+    statusSelect.value = "true";
+  } else if (guest.confirmado === false) {
+    statusSelect.value = "false";
+  } else {
+    statusSelect.value = "pending";
+  }
+
+  // Poblar asistentes reales y ajustar visibilidad del campo
+  document.getElementById("modal-guest-attendees").value = guest.asistentes_confirmados || 0;
+  toggleAttendeesField();
+
   // Mostrar modal
   document.getElementById("admin-guest-modal").classList.add("active");
   document.getElementById("modal-guest-name").focus();
@@ -449,26 +577,68 @@ function generateRandomPIN() {
   pinInput.value = pin;
 }
 
+// Mostrar/ocultar el campo de asistentes reales según el estado seleccionado
+// (solo tiene sentido cuando el invitado confirma que SÍ asistirá)
+function toggleAttendeesField() {
+  const status = document.getElementById("modal-guest-status").value;
+  const attendeesGroup = document.getElementById("modal-attendees-group");
+  const attendeesInput = document.getElementById("modal-guest-attendees");
+  if (!attendeesGroup || !attendeesInput) return;
+
+  if (status === "true") {
+    attendeesGroup.style.display = "";
+  } else {
+    attendeesGroup.style.display = "none";
+    attendeesInput.value = "0";
+  }
+}
+
 // Guardar o Actualizar Invitado (Supabase o Fallback)
 async function saveGuest(event) {
   event.preventDefault();
-  
+
   const saveBtn = document.getElementById("btn-save-submit");
   const guestId = document.getElementById("modal-guest-id").value;
   const name = document.getElementById("modal-guest-name").value.trim();
+  const phone = document.getElementById("modal-guest-phone").value.trim();
   const passes = parseInt(document.getElementById("modal-guest-passes").value, 10);
   const table = document.getElementById("modal-guest-table").value.trim();
   const pin = document.getElementById("modal-guest-pin").value.trim();
-  
+
+  // Leer estado de confirmación seleccionado
+  const statusVal = document.getElementById("modal-guest-status").value;
+  let confirmado = null;
+  if (statusVal === "true") confirmado = true;
+  else if (statusVal === "false") confirmado = false;
+
+  // Determinar asistentes reales según el estado
+  let attendees = 0;
+  if (confirmado === true) {
+    attendees = parseInt(document.getElementById("modal-guest-attendees").value, 10);
+    if (isNaN(attendees)) attendees = 0;
+  }
+
   // Validaciones
   if (!name || isNaN(passes) || passes < 1 || !pin) {
     alert("Por favor completa los campos obligatorios.");
     return;
   }
-  
+
   if (pin.length !== 4 || isNaN(parseInt(pin, 10))) {
     alert("El PIN de confirmación debe constar exactamente de 4 dígitos numéricos.");
     return;
+  }
+
+  // Validar asistentes reales cuando confirma asistencia
+  if (confirmado === true) {
+    if (attendees < 1) {
+      alert("Si el invitado confirma asistencia, debe haber al menos 1 asistente real.");
+      return;
+    }
+    if (attendees > passes) {
+      alert(`Los asistentes reales (${attendees}) no pueden superar los pases permitidos (${passes}).`);
+      return;
+    }
   }
   
   // Deshabilitar botón
@@ -476,32 +646,47 @@ async function saveGuest(event) {
   const originalBtnText = saveBtn.innerText;
   saveBtn.innerText = "Procesando...";
   
+  // Calcular fecha de confirmación:
+  // - Si pasa a Pendiente (null), se limpia la fecha.
+  // - Si confirma (Sí/No), conserva la fecha previa o registra la actual.
+  const existingGuest = guestId ? allGuests.find(g => g.id === guestId) : null;
+  let fechaConfirmacion;
+  if (confirmado === null) {
+    fechaConfirmacion = null;
+  } else {
+    fechaConfirmacion = (existingGuest && existingGuest.fecha_confirmacion)
+      ? existingGuest.fecha_confirmacion
+      : new Date().toISOString();
+  }
+
+  // Objeto base con todos los campos editables
+  const payload = {
+    nombre_completo: name,
+    telefono: phone !== "" ? phone : null,
+    pases_totales: passes,
+    numero_mesa: table !== "" ? table : null,
+    codigo_acceso: pin,
+    confirmado: confirmado,
+    asistentes_confirmados: attendees,
+    fecha_confirmacion: fechaConfirmacion
+  };
+
   try {
     if (isSupabaseConfigured && supabaseClient) {
       if (guestId) {
         // ACTUALIZAR (UPDATE)
         const { error } = await supabaseClient
           .from('invitados')
-          .update({
-            nombre_completo: name,
-            pases_totales: passes,
-            numero_mesa: table !== "" ? table : null,
-            codigo_acceso: pin
-          })
+          .update(payload)
           .eq('id', guestId);
-          
+
         if (error) throw error;
       } else {
         // CREAR NUEVO (INSERT)
         const { error } = await supabaseClient
           .from('invitados')
-          .insert([{
-            nombre_completo: name,
-            pases_totales: passes,
-            numero_mesa: table !== "" ? table : null,
-            codigo_acceso: pin
-          }]);
-          
+          .insert([payload]);
+
         if (error) throw error;
       }
     } else {
@@ -510,23 +695,15 @@ async function saveGuest(event) {
         // Actualizar en array en memoria
         const idx = localAdminMock.findIndex(g => g.id === guestId);
         if (idx !== -1) {
-          localAdminMock[idx].nombre_completo = name;
-          localAdminMock[idx].pases_totales = passes;
-          localAdminMock[idx].numero_mesa = table !== "" ? table : null;
-          localAdminMock[idx].codigo_acceso = pin;
+          localAdminMock[idx] = { ...localAdminMock[idx], ...payload };
         }
       } else {
         // Agregar nuevo elemento local
         const newId = "mock-" + Date.now();
         localAdminMock.push({
           id: newId,
-          nombre_completo: name,
-          pases_totales: passes,
-          numero_mesa: table !== "" ? table : null,
-          codigo_acceso: pin,
-          confirmado: null,
-          asistentes_confirmados: 0,
-          comentarios: ""
+          comentarios: "",
+          ...payload
         });
       }
     }

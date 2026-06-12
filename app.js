@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LÓGICA DE LA INVITACIÓN Y RSVP - 70 AÑOS DE DOÑA GLADIS
+   LÓGICA DE LA INVITACIÓN Y RSVP - 70 AÑOS DE MAMÁ GLADIS
    ========================================================================== */
 
 // 1. CONFIGURACIÓN DE SUPABASE
@@ -969,7 +969,7 @@ function showSuccessState(isAttending, attendeesCount, shouldScroll = true) {
   if (oldNotice) oldNotice.remove();
   
   if (isAttending) {
-    successText.innerText = `¡Gracias por confirmar tu asistencia! Nos alegra mucho saber que nos acompañarás en la celebración de los 70 años de Doña Gladis.`;
+    successText.innerText = `¡Gracias por confirmar tu asistencia! Nos alegra mucho saber que nos acompañarás en la celebración de los 70 años de Mamá Gladis.`;
     
     summaryBox.innerHTML = `
       <div class="success-summary-row">
