@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     initRSVPSearch();
     checkRSVPDeadlineOnLoad();
-    autoLoginFromLocalStorage();
+    initAutoLogin();
   } catch (e) {
     console.error("Error al inicializar buscador RSVP:", e);
   }
@@ -1083,6 +1083,106 @@ function clearSelectedGuest() {
   setTimeout(() => {
     document.getElementById("confirmar").scrollIntoView({ behavior: 'smooth' });
   }, 100);
+}
+
+// COORDINADOR DE INICIO DE SESIÓN AUTOMÁTICO
+// Prioriza el código que viene embebido en el enlace (URL); si no hay,
+// recurre a la sesión guardada previamente en este dispositivo.
+async function initAutoLogin() {
+  const handledByURL = await autoLoginFromURL();
+  if (!handledByURL) {
+    await autoLoginFromLocalStorage();
+  }
+}
+
+// INICIAR SESIÓN AUTOMÁTICA DESDE EL ENLACE PERSONALIZADO (URL)
+// El enlace que se envía por WhatsApp incluye el id del invitado y su código,
+// por ejemplo: ...?inv=<id>&pin=<codigo>. Al detectarlos, reconocemos
+// automáticamente al invitado sin que tenga que escribir su código.
+async function autoLoginFromURL() {
+  let urlId, urlPin;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    urlId = params.get("inv");
+    urlPin = params.get("pin");
+  } catch (e) {
+    return false;
+  }
+
+  // Si el enlace no trae los parámetros, no hacemos nada aquí
+  if (!urlId || !urlPin) return false;
+
+  const loader = document.getElementById("rsvp-loader");
+  if (loader) loader.classList.remove("hidden");
+
+  // Ocultar temporalmente el buscador mientras se valida
+  document.querySelector(".search-container").classList.add("hidden");
+  document.querySelector(".rsvp-instructions").classList.add("hidden");
+  const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
+  if (deadlineNotice) deadlineNotice.classList.add("hidden");
+
+  let verifiedGuest = null;
+
+  try {
+    if (isSupabaseConfigured && supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('invitados')
+        .select('*')
+        .eq('id', urlId)
+        .eq('codigo_acceso', urlPin)
+        .maybeSingle();
+
+      if (error) throw error;
+      verifiedGuest = data;
+    } else {
+      // Simulación local
+      verifiedGuest = localMockInvitados.find(inv => inv.id === urlId && inv.codigo_acceso === urlPin);
+    }
+
+    if (verifiedGuest) {
+      selectedGuest = verifiedGuest;
+
+      // Guardar sesión para que no tenga que volver a identificarse en este dispositivo
+      try {
+        localStorage.setItem("rsvp_guest_id", selectedGuest.id);
+        localStorage.setItem("rsvp_guest_pin", urlPin);
+      } catch (e) {
+        console.warn("No se pudo guardar la sesión en localStorage:", e);
+      }
+
+      // Limpiar el código de la barra de direcciones por privacidad
+      // (sin recargar la página), dejando la URL base.
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+      } catch (e) {
+        // Silencioso si el navegador lo bloquea
+      }
+
+      // Mostrar el nombre del invitado reconocido
+      document.getElementById("rsvp-search-input").value = selectedGuest.nombre_completo;
+
+      const hasTable = selectedGuest.numero_mesa && selectedGuest.numero_mesa.trim() !== "";
+      const shouldScroll = selectedGuest.confirmado === true && hasTable;
+      unlockRSVPDetails(selectedGuest, shouldScroll);
+
+      return true;
+    } else {
+      // Enlace inválido o invitado eliminado: mostrar buscador normal
+      document.querySelector(".search-container").classList.remove("hidden");
+      document.querySelector(".rsvp-instructions").classList.remove("hidden");
+      if (deadlineNotice) deadlineNotice.classList.remove("hidden");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error en auto-login desde URL:", error);
+    // Mostrar buscador en caso de fallo de red para no dejar la pantalla vacía
+    document.querySelector(".search-container").classList.remove("hidden");
+    document.querySelector(".rsvp-instructions").classList.remove("hidden");
+    if (deadlineNotice) deadlineNotice.classList.remove("hidden");
+    return false;
+  } finally {
+    if (loader) loader.classList.add("hidden");
+  }
 }
 
 // INICIAR SESIÓN AUTOMÁTICA DESDE LOCALSTORAGE

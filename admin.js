@@ -276,12 +276,15 @@ function renderTable(guests) {
 
     // Generar mensaje de invitación personalizado
     const inviteUrl = "https://sergioc11.github.io/invitacion-gladis/";
+    // Enlace personalizado: lleva el código embebido para que la invitación
+    // reconozca automáticamente al invitado al hacer clic (sin teclear el código).
+    const personalInviteUrl = `${inviteUrl}?inv=${encodeURIComponent(g.id)}&pin=${encodeURIComponent(g.codigo_acceso)}`;
     const shareMessage = `Hola *${g.nombre_completo}*, queremos invitarte de manera muy especial a celebrar los *70 Años de Doña Gladis*. 🌸
 
-Por favor, ingresa en el siguiente enlace para ver todos los detalles de la invitación y confirmar tu asistencia:
-👉 ${inviteUrl}
+Solo da clic en tu enlace personal para ver todos los detalles y confirmar tu asistencia. ¡La invitación te reconocerá automáticamente!
+👉 ${personalInviteUrl}
 
-🔑 Tu código de acceso personal es: *${g.codigo_acceso}*
+🔑 Por si lo necesitas, tu código de acceso personal es: *${g.codigo_acceso}*
 
 ¡Esperamos contar con tu valiosa presencia!`;
 
@@ -324,6 +327,71 @@ Por favor, ingresa en el siguiente enlace para ver todos los detalles de la invi
   if (typeof lucide !== 'undefined') {
     lucide.createIcons();
   }
+}
+
+// ==========================================================================
+// DESCARGAR REPORTE DE INVITADOS (CSV)
+// ==========================================================================
+function downloadReport() {
+  if (!allGuests || allGuests.length === 0) {
+    alert("No hay invitados para exportar.");
+    return;
+  }
+
+  // Encabezados de las columnas solicitadas
+  const headers = ["No.", "Nombre Completo", "Mesa", "Pases Totales", "Estado", "Asistentes Reales"];
+
+  // Helper para escapar valores en formato CSV
+  const escapeCSV = (value) => {
+    const str = (value === null || value === undefined) ? "" : String(value);
+    // Si contiene comas, comillas o saltos de línea, se envuelve en comillas dobles
+    if (/[",\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  // Construir filas a partir de la lista completa (ordenada por nombre)
+  const rows = allGuests.map((g, index) => {
+    const mesa = (g.numero_mesa && g.numero_mesa.trim() !== "") ? g.numero_mesa : "Por asignarse";
+
+    let estado;
+    if (g.confirmado === true) {
+      estado = "Confirmado (Sí)";
+    } else if (g.confirmado === false) {
+      estado = "No Asistirá";
+    } else {
+      estado = "Pendiente";
+    }
+
+    // Asistentes reales: solo aplica si confirmó asistencia
+    const asistentes = g.confirmado === true ? (g.asistentes_confirmados || 0) : 0;
+
+    return [
+      escapeCSV(index + 1),
+      escapeCSV(g.nombre_completo),
+      escapeCSV(mesa),
+      escapeCSV(g.pases_totales),
+      escapeCSV(estado),
+      escapeCSV(asistentes)
+    ].join(",");
+  });
+
+  // Unir todo con BOM UTF-8 para acentos correctos en Excel
+  const csvContent = "﻿" + [headers.join(","), ...rows].join("\n");
+
+  // Generar y disparar la descarga
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  const fecha = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = `reporte-invitados-${fecha}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 // ==========================================================================
