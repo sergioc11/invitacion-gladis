@@ -199,6 +199,44 @@ function initMusicControl() {
 }
 
 // ==========================================================================
+// PROTECCIÓN DE BOTONES "AGENDAR EVENTO" Y "VER MAPA"
+// Solo se permiten si el invitado ya confirmó su asistencia (Sí). Si no,
+// se muestra un aviso y se le lleva a la sección de confirmación.
+// ==========================================================================
+function guardEventLinks(event) {
+  if (selectedGuest && selectedGuest.confirmado === true) {
+    return true; // Ya confirmó asistencia: permitir abrir el enlace
+  }
+
+  event.preventDefault();
+  showConfirmFirstToast();
+
+  // Llevar al invitado a la sección de confirmación
+  setTimeout(() => {
+    const rsvpSection = document.getElementById("confirmar");
+    if (rsvpSection) rsvpSection.scrollIntoView({ behavior: "smooth" });
+  }, 350);
+
+  return false;
+}
+
+let confirmToastTimeout = null;
+function showConfirmFirstToast() {
+  let toast = document.getElementById("confirm-required-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "confirm-required-toast";
+    toast.className = "confirm-required-toast";
+    toast.innerText = "🌸 Primero confirma tu asistencia para poder agendar el evento y ver la ubicación.";
+    document.body.appendChild(toast);
+  }
+  requestAnimationFrame(() => toast.classList.add("visible"));
+
+  clearTimeout(confirmToastTimeout);
+  confirmToastTimeout = setTimeout(() => toast.classList.remove("visible"), 4500);
+}
+
+// ==========================================================================
 // CUENTA REGRESIVA (TARGET: 20 DE JUNIO DE 2026, 18:00:00)
 // ==========================================================================
 function initCountdown() {

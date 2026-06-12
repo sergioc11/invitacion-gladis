@@ -2344,4 +2344,34 @@ body.no-scroll {
   }
 }
 
+/* ==========================================================================
+   AVISO FLOTANTE: "CONFIRMA TU ASISTENCIA PRIMERO"
+   Aparece al tocar Agendar Evento o Ver Mapa sin haber confirmado.
+   ========================================================================== */
+.confirm-required-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background-color: var(--color-burgundy);
+  color: #FFF;
+  padding: 14px 24px;
+  border-radius: 30px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+  max-width: min(90%, 420px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.confirm-required-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 
