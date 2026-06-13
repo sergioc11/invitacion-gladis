@@ -161,11 +161,6 @@ async function setSentStatus(guestId, sent) {
   }
 }
 
-function toggleSent(guestId) {
-  const guest = allGuests.find(g => g.id === guestId);
-  setSentStatus(guestId, !(guest && guest.invitacion_enviada === true));
-}
-
 // ==========================================================================
 // CONSTRUCCIÓN DEL MENSAJE Y ENLACE DE WHATSAPP
 // ==========================================================================
@@ -316,17 +311,12 @@ function buildCard(g) {
       <a href="${whatsappUrl}" onclick="return sendInvite('${g.id}', '${whatsappUrl}')" target="_blank" rel="noopener" class="btn-send-wa" title="${sendLabel}">
         <i data-lucide="send"></i> ${sendLabel}
       </a>
-      <button type="button" class="btn-mark ${isSent ? 'active' : ''}" title="Marcar como enviado">
-        <i data-lucide="${isSent ? 'check' : 'circle'}"></i>
-      </button>
     </div>
   `;
 
-  // Botón de marcar como enviado
-  const markBtn = card.querySelector(".btn-mark");
-  markBtn.addEventListener("click", () => toggleSent(g.id));
-
-  // (El botón de WhatsApp usa onclick inline -> sendInvite, igual que el panel)
+  // El estado de "enviado" se marca SOLO automáticamente al pulsar Enviar
+  // (sendInvite). Ya no hay botón manual para evitar marcas por error;
+  // la corrección del estado se hace únicamente desde el panel de admin.
 
   return card;
 }
