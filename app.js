@@ -749,12 +749,13 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
   
   if (!detailsForm || !form) return;
 
-  // Ocultar buscador de RSVP
+  // Ocultar buscador de RSVP (el aviso de fecha límite se decide más abajo
+  // según si el plazo ya venció o no, para que también lo vean los invitados
+  // que ya iniciaron sesión con su enlace personal).
   document.querySelector(".search-container").classList.add("hidden");
   document.querySelector(".rsvp-instructions").classList.add("hidden");
   const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
-  if (deadlineNotice) deadlineNotice.classList.add("hidden");
-  
+
   // Rellenar campos en la UI
   document.getElementById("guest-name-val").innerText = guest.nombre_completo;
   document.getElementById("guest-passes-val").innerText = guest.pases_totales === 1 ? '1 pase' : `${guest.pases_totales} pases`;
@@ -767,9 +768,9 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
     tableValEl.innerHTML = `<span style="color:var(--color-text-muted); font-style:italic;">Por asignarse (Te notificaremos pronto)</span>`;
   }
   
-  // Verificar si la fecha límite ya expiró (Domingo 14 de Junio de 2026, 23:59:59)
+  // Verificar si la fecha límite ya expiró (Lunes 15 de Junio de 2026, 23:59:59)
   const now = new Date();
-  const deadline = new Date("2026-06-15T00:00:00");
+  const deadline = new Date("2026-06-16T00:00:00");
   const isDeadlinePassed = now >= deadline;
 
   // Eliminar cualquier mensaje previo de deadline anterior
@@ -778,6 +779,8 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
 
   if (isDeadlinePassed) {
     form.classList.add("hidden");
+    // Plazo vencido: el aviso superior se reemplaza por el recuadro de abajo
+    if (deadlineNotice) deadlineNotice.classList.add("hidden");
 
     // Crear y mostrar mensaje de plazo vencido
     const deadlineMsg = document.createElement("div");
@@ -787,18 +790,18 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
     if (guest.confirmado === true) {
       deadlineMsg.innerHTML = `
         <div class="status-badge status-attending"><i data-lucide="check-circle"></i> Asistencia Confirmada</div>
-        <p class="deadline-msg-text">El período de confirmaciones finalizó el 14 de junio. Registraste tu asistencia con <strong>${guest.asistentes_confirmados} de ${guest.pases_totales} pases</strong>.</p>
+        <p class="deadline-msg-text">El período de confirmaciones finalizó el 15 de junio. Registraste tu asistencia con <strong>${guest.asistentes_confirmados} de ${guest.pases_totales} pases</strong>.</p>
         <p class="deadline-msg-sub">${guest.numero_mesa ? `¡Te esperamos en la <strong>${guest.numero_mesa}</strong>!` : '¡Te esperamos! Te notificaremos tu mesa asignada pronto.'}</p>
       `;
     } else if (guest.confirmado === false) {
       deadlineMsg.innerHTML = `
         <div class="status-badge status-declined"><i data-lucide="x-circle"></i> Asistencia Declinada</div>
-        <p class="deadline-msg-text">El período de confirmaciones finalizó el 14 de junio. Registraste que no te era posible asistir.</p>
+        <p class="deadline-msg-text">El período de confirmaciones finalizó el 15 de junio. Registraste que no te era posible asistir.</p>
       `;
     } else {
       deadlineMsg.innerHTML = `
         <div class="status-badge status-pending"><i data-lucide="alert-circle"></i> Plazo Vencido</div>
-        <p class="deadline-msg-text">El período de confirmaciones finalizó el domingo 14 de junio. No se registró respuesta a esta invitación.</p>
+        <p class="deadline-msg-text">El período de confirmaciones finalizó el lunes 15 de junio. No se registró respuesta a esta invitación.</p>
         <p class="deadline-msg-sub">Por favor, comunícate directamente con los organizadores si tienes dudas.</p>
       `;
     }
@@ -810,6 +813,9 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
   } else {
     // Si no ha expirado el plazo, asegurar que el formulario sea visible
     form.classList.remove("hidden");
+    // Mantener visible el aviso de fecha límite también para el invitado
+    // que ya inició sesión, para que recuerde el plazo de confirmación.
+    if (deadlineNotice) deadlineNotice.classList.remove("hidden");
   }
 
   // Poblar dinámicamente el selector de acompañantes reales
@@ -1093,7 +1099,7 @@ function clearSelectedGuest() {
   
   // Mostrar aviso de deadline si no ha vencido el plazo
   const now = new Date();
-  const deadline = new Date("2026-06-15T00:00:00");
+  const deadline = new Date("2026-06-16T00:00:00");
   const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
   if (deadlineNotice && now < deadline) {
     deadlineNotice.classList.remove("hidden");
@@ -1298,7 +1304,7 @@ async function autoLoginFromLocalStorage() {
 function checkRSVPDeadlineOnLoad() {
   try {
     const now = new Date();
-    const deadline = new Date("2026-06-15T00:00:00"); // Lunes 15 a las 00:00 (límite Domingo 14 a las 23:59:59)
+    const deadline = new Date("2026-06-16T00:00:00"); // Martes 16 a las 00:00 (límite: Lunes 15 a las 23:59:59 / medianoche)
     
     if (now >= deadline) {
       const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
@@ -1308,7 +1314,7 @@ function checkRSVPDeadlineOnLoad() {
         deadlineNotice.style.color = "#C62828";
         deadlineNotice.innerHTML = `
           <i data-lucide="calendar-x" style="color:#C62828;"></i>
-          <span>El período de confirmación finalizó el <strong>Domingo 14 de Junio de 2026</strong></span>
+          <span>El período de confirmación finalizó el <strong>Lunes 15 de Junio de 2026</strong></span>
         `;
       }
       

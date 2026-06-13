@@ -156,7 +156,7 @@ body {
    ========================================================================== */
 .welcome-header {
   position: relative;
-  padding: 100px 20px 50px 20px;
+  padding: 70px 20px 55px 20px;
   background-color: var(--color-bg-primary);
   display: flex;
   justify-content: center;
@@ -177,6 +177,15 @@ body {
   text-transform: uppercase;
   color: var(--color-gold-dark);
   margin-bottom: 10px;
+}
+
+/* El número 70 destacado dentro de "Mis 70 Años" */
+.welcome-70 {
+  font-size: 1.9em;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  letter-spacing: 2px;
+  vertical-align: -0.08em;
 }
 
 .welcome-title {
@@ -512,10 +521,40 @@ body {
 }
 
 /* ==========================================================================
-   GALERÍA DE FOTOS (CARRUSEL PREMIUM Y RESPONSIVO)
+   RETRATO DEL ENCABEZADO (PROTAGONISTA) - MARCO RECTANGULAR REDONDEADO
    ========================================================================== */
-.gallery-section {
-  background-color: var(--color-bg-secondary);
+.welcome-portrait {
+  width: 90%;
+  max-width: 400px;
+  margin: 18px auto 28px;
+  padding: 13px;
+  background: linear-gradient(145deg, #FFFFFF, #FBF6EE);
+  border: 2px solid var(--color-gold);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(74, 17, 36, 0.22);
+  position: relative;
+  animation: fadeInUp 1.4s ease-out;
+}
+
+/* Filete dorado interior a juego con el resto de la invitación */
+.welcome-portrait::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid var(--color-gold-light);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.welcome-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center 20%;
+  border-radius: 11px;
 }
 
 .gallery-carousel-wrapper {

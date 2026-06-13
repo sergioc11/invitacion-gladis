@@ -77,7 +77,11 @@
     <div class="decor-corner bottom-right small"></div>
 
     <div class="welcome-header-content">
-      <p class="welcome-subheader">Mis 70 Años</p>
+      <p class="welcome-subheader">Mis <span class="welcome-70">70</span> Años</p>
+      <!-- Retrato en arco (protagonista de la invitación) -->
+      <div class="welcome-portrait">
+        <img src="Img/WhatsApp Image 2026-06-10 at 10.40.21 PM.jpeg" alt="Mamá Gladis" loading="lazy">
+      </div>
       <h1 class="welcome-title">Gladis Elizabeth</h1>
       <div class="gold-line"></div>
       <p class="welcome-quote">
@@ -154,91 +158,6 @@
       </div>
     </section>
 
-    <!-- Galería de Fotos -->
-    <section class="section gallery-section" id="galeria">
-      <div class="section-container">
-        <h2 class="section-title">Nuestros Recuerdos</h2>
-        <div class="gold-line"></div>
-        <p class="section-subtitle">Momentos que atesoramos con cariño</p>
-
-        <!-- Carrusel de fotos interactivo y responsivo -->
-        <div class="gallery-carousel-wrapper animate-on-scroll">
-          <div class="carousel-container">
-            <div class="carousel-track" id="carousel-track">
-              <!-- Las fotos se colocan aquí como slides -->
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(0)">
-                <img src="Img/WhatsApp Image 2026-06-10 at 10.40.21 PM.jpeg" alt="Recuerdo Gladis 1" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(1)">
-                <img src="Img/IMG_20250411_174012.jpg" alt="Recuerdo Gladis 2" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(2)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.12 PM (1).jpeg" alt="Recuerdo Gladis 3" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(3)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM.jpeg" alt="Recuerdo Gladis 4" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(4)">
-                <img src="Img/IMG-20250412-WA0024.jpg" alt="Recuerdo Gladis 5" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(5)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (2).jpeg" alt="Recuerdo Gladis 6" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(6)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (3).jpeg" alt="Recuerdo Gladis 7" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(7)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (4).jpeg" alt="Recuerdo Gladis 8" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(8)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.13 PM (5).jpeg" alt="Recuerdo Gladis 9" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(9)">
-                <img src="Img/WhatsApp Image 2026-06-09 at 12.14.14 PM.jpeg" alt="Recuerdo Gladis 10" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(10)">
-                <img src="Img/WhatsApp Image 2026-06-12 at 9.52.32 AM (3).jpeg" alt="Recuerdo Gladis 11" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(11)">
-                <img src="Img/WhatsApp Image 2026-06-12 at 9.52.32 AM.jpeg" alt="Recuerdo Gladis 12" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(12)">
-                <img src="Img/WhatsApp Image 2026-06-12 at 9.52.32 AM (1).jpeg" alt="Recuerdo Gladis 13" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-              <div class="carousel-slide" onclick="openLightboxFromCarousel(13)">
-                <img src="Img/WhatsApp Image 2026-06-12 at 9.52.32 AM (2).jpeg" alt="Recuerdo Gladis 14" loading="lazy">
-                <div class="carousel-slide-hover"><i data-lucide="maximize-2"></i></div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Controles de navegación -->
-          <button type="button" class="carousel-btn prev-btn" id="carousel-prev" aria-label="Foto anterior">
-            <i data-lucide="chevron-left"></i>
-          </button>
-          <button type="button" class="carousel-btn next-btn" id="carousel-next" aria-label="Foto siguiente">
-            <i data-lucide="chevron-right"></i>
-          </button>
-          
-          <!-- Puntos indicadores -->
-          <div class="carousel-dots" id="carousel-dots"></div>
-        </div>
-      </div>
-    </section>
-
     <!-- Sección RSVP (Confirmación de Asistencia) -->
     <section class="section rsvp-section" id="confirmar">
       <div class="section-container">
@@ -256,7 +175,7 @@
           <!-- Aviso de Fecha Límite -->
           <div class="rsvp-deadline-notice animate-on-scroll">
             <i data-lucide="info"></i>
-            <span>Confirmaciones abiertas hasta el <strong>Domingo 14 de Junio de 2026</strong></span>
+            <span>Confirmaciones abiertas hasta el <strong>Lunes 15 de Junio de 2026</strong></span>
           </div>
 
           <!-- Buscador con sugerencias autocompletables -->
@@ -380,14 +299,6 @@
     </section>
 
   </main>
-
-  <!-- Lightbox Modal de la Galería -->
-  <div class="lightbox" id="lightbox">
-    <button class="lightbox-close" id="lightbox-close" aria-label="Cerrar galeria">&times;</button>
-    <button class="lightbox-prev" id="lightbox-prev" aria-label="Foto anterior">&#10094;</button>
-    <img class="lightbox-content" id="lightbox-img" src="" alt="Ampliación de foto">
-    <button class="lightbox-next" id="lightbox-next" aria-label="Foto siguiente">&#10095;</button>
-  </div>
 
   <!-- Footer -->
   <footer class="footer">
