@@ -92,28 +92,25 @@
       margin-bottom: 8px;
     }
 
-    /* ----- Tarjeta de invitación (media carta, una por página) ----- */
+    /* ----- Tarjeta de invitación (horizontal, dos por hoja carta) ----- */
     .cards-area {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 26px;
+      gap: 22px;
       padding-bottom: 60px;
     }
 
     .inv-card {
-      width: 14cm;
-      min-height: 19.2cm;
+      width: 19cm;
+      height: 12.3cm;
       background-color: var(--inv-cream);
       border: 2px solid var(--inv-gold);
-      outline: 6px solid var(--inv-cream);
-      outline-offset: -10px;
       box-shadow: 0 8px 26px rgba(0,0,0,0.18);
-      padding: 1.1cm 1cm 0.9cm;
+      padding: 0.55cm 0.7cm;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+      flex-direction: row;
+      align-items: stretch;
       position: relative;
       box-sizing: border-box;
     }
@@ -121,162 +118,165 @@
     .inv-card::before {
       content: "";
       position: absolute;
-      inset: 0.45cm;
+      inset: 0.3cm;
       border: 1px solid var(--inv-gold);
       pointer-events: none;
     }
 
+    /* Columnas: izquierda (celebración) | derecha (invitado + QR) */
+    .inv-left, .inv-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .inv-left {
+      flex: 1.1;
+      padding: 0 0.55cm;
+      border-right: 1px solid var(--inv-gold);
+    }
+    .inv-right {
+      padding: 0 0.5cm;
+      gap: 7px;
+    }
+
     .inv-pre-title {
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.66rem;
-      letter-spacing: 3.5px;
+      font-size: 0.62rem;
+      letter-spacing: 3px;
       text-transform: uppercase;
       color: var(--inv-gold-dark);
-      margin-top: 0.25cm;
     }
     .inv-script {
       font-family: 'Great Vibes', cursive;
-      font-size: 2.1rem;
+      font-size: 1.7rem;
       color: var(--inv-burgundy);
       line-height: 1;
-      margin-top: 8px;
+      margin-top: 4px;
     }
     .inv-big-number {
       font-family: 'Cinzel', serif;
-      font-size: 4.4rem;
+      font-size: 3.6rem;
       font-weight: 700;
       color: var(--inv-burgundy);
       line-height: 1;
-      margin-top: 2px;
     }
     .inv-years {
       font-family: 'Cinzel', serif;
-      font-size: 1.05rem;
-      letter-spacing: 6px;
+      font-size: 0.95rem;
+      letter-spacing: 5px;
       text-transform: uppercase;
       color: var(--inv-gold-dark);
-      margin-top: 2px;
     }
     .inv-name {
       font-family: 'Cinzel', serif;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 600;
       color: var(--inv-text);
-      margin-top: 10px;
+      margin-top: 7px;
     }
     .gold-divider {
-      width: 4cm;
+      width: 3.4cm;
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--inv-gold), transparent);
-      margin: 12px auto 10px;
-    }
-
-    .inv-surprise {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--inv-burgundy);
-      background: rgba(197, 168, 128, 0.16);
-      border: 1px dashed var(--inv-gold);
-      border-radius: 8px;
-      padding: 7px 14px;
-      max-width: 86%;
+      margin: 10px auto;
     }
 
     .inv-details {
-      margin-top: 12px;
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.86rem;
+      font-size: 0.8rem;
       color: var(--inv-text);
-      line-height: 1.75;
+      line-height: 1.7;
     }
     .inv-details strong { color: var(--inv-burgundy); }
 
+    .inv-footer {
+      margin-top: 10px;
+      font-family: 'Great Vibes', cursive;
+      font-size: 1.15rem;
+      color: var(--inv-gold-dark);
+    }
+
     .inv-guest-box {
-      margin-top: 12px;
-      width: 88%;
+      width: 100%;
       border: 1px solid var(--inv-gold);
       border-radius: 10px;
-      padding: 10px 14px 12px;
+      padding: 8px 12px 10px;
       background: #FFF;
     }
     .inv-guest-label {
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.62rem;
+      font-size: 0.6rem;
       letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--inv-gold-dark);
     }
     .inv-guest-name {
       font-family: 'Cinzel', serif;
-      font-size: 1.12rem;
+      font-size: 1.05rem;
       font-weight: 600;
       color: var(--inv-burgundy);
       margin-top: 3px;
     }
     .inv-guest-passes {
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--inv-text);
       margin-top: 3px;
     }
 
-    .inv-qr-row {
-      margin-top: 13px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      width: 88%;
-      justify-content: center;
-    }
     .inv-qr {
       background: #FFF;
-      padding: 7px;
+      padding: 6px;
       border: 1px solid var(--inv-gold);
       border-radius: 8px;
     }
     .inv-qr img, .inv-qr canvas { display: block; }
     .inv-qr-text {
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--inv-text);
-      text-align: left;
-      max-width: 6.2cm;
-      line-height: 1.55;
+      text-align: center;
+      line-height: 1.5;
     }
     .inv-code {
       font-family: 'Courier New', monospace;
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
       letter-spacing: 4px;
       color: var(--inv-burgundy);
     }
     .inv-deadline {
-      margin-top: 11px;
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-style: italic;
       color: #8A8178;
-    }
-    .inv-footer {
-      margin-top: auto;
-      padding-top: 8px;
-      font-family: 'Great Vibes', cursive;
-      font-size: 1.25rem;
-      color: var(--inv-gold-dark);
+      line-height: 1.4;
     }
 
-    /* ----- Impresión ----- */
+    /* ----- Impresión: dos tarjetas por hoja tamaño carta ----- */
+    @page {
+      size: letter portrait;
+      margin: 1cm;
+    }
     @media print {
       body { background: #FFF; }
       .print-controls, .admin-lock-overlay { display: none !important; }
-      .cards-area { gap: 0; padding: 0; }
+      .cards-area { gap: 0.5cm; padding: 0; }
       .inv-card {
         box-shadow: none;
-        page-break-after: always;
         margin: 0 auto;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
-      .inv-card:last-child { page-break-after: auto; }
+      /* Salto de página después de cada segunda tarjeta */
+      .inv-card:nth-child(2n) {
+        page-break-after: always;
+        break-after: page;
+      }
     }
   </style>
 </head>
@@ -302,7 +302,7 @@
   <div id="print-dashboard" class="hidden">
     <div class="print-controls">
       <h1>Tarjetas de Invitación para Imprimir</h1>
-      <p class="help">Cada invitado tiene su propia tarjeta con nombre, código y QR personalizado. Usa el botón Imprimir (o guarda como PDF) — sale una tarjeta por página.</p>
+      <p class="help">Cada invitado tiene su propia tarjeta con nombre, código y QR personalizado. Usa el botón Imprimir (o guarda como PDF) — salen <strong>dos tarjetas por hoja tamaño carta</strong>.</p>
       <div class="controls-row">
         <input type="text" id="print-search" placeholder="Buscar invitado por nombre...">
         <select id="print-filter">
@@ -438,39 +438,42 @@
         const card = document.createElement("div");
         card.className = "inv-card";
         card.innerHTML = `
-          <div class="inv-pre-title">Celebremos juntos</div>
-          <div class="inv-script">Los</div>
-          <div class="inv-big-number">70</div>
-          <div class="inv-years">Años</div>
-          <div class="inv-name">de Mamá Gladis</div>
-          <div class="gold-divider"></div>
-          <div class="inv-surprise">🤫 ¡Es una FIESTA SORPRESA! Por favor guarda el secreto y no le comentes nada a ella.</div>
-          <div class="inv-details">
-            <strong>Sábado, 20 de Junio de 2026</strong> · 18:00 horas (6:00 PM)<br>
-            <strong>Salón Municipal de Sanarate</strong>, El Progreso
+          <div class="inv-left">
+            <div class="inv-pre-title">Celebremos juntos</div>
+            <div class="inv-script">Los</div>
+            <div class="inv-big-number">70</div>
+            <div class="inv-years">Años</div>
+            <div class="inv-name">de Mamá Gladis</div>
+            <div class="gold-divider"></div>
+            <div class="inv-details">
+              <strong>Sábado, 20 de Junio de 2026</strong><br>
+              18:00 horas (6:00 PM)<br>
+              <strong>Salón Municipal de Sanarate</strong><br>
+              El Progreso
+            </div>
+            <div class="inv-footer">Con cariño, la familia</div>
           </div>
-          <div class="inv-guest-box">
-            <div class="inv-guest-label">Invitación especial para</div>
-            <div class="inv-guest-name">${g.nombre_completo}</div>
-            <div class="inv-guest-passes">${g.pases_totales === 1 ? 'Válida por 1 pase' : 'Válida por ' + g.pases_totales + ' pases'}</div>
-          </div>
-          <div class="inv-qr-row">
+          <div class="inv-right">
+            <div class="inv-guest-box">
+              <div class="inv-guest-label">Invitación especial para</div>
+              <div class="inv-guest-name">${g.nombre_completo}</div>
+              <div class="inv-guest-passes">${g.pases_totales === 1 ? 'Válida por 1 pase' : 'Válida por ' + g.pases_totales + ' pases'}</div>
+            </div>
             <div class="inv-qr" id="qr-${g.id}"></div>
             <div class="inv-qr-text">
-              Escanea este código con la cámara de tu celular para ver la <strong>invitación digital</strong> y <strong>confirmar tu asistencia</strong>.<br>
-              Tu código personal:<br><span class="inv-code">${g.codigo_acceso}</span>
+              Escanea con la cámara de tu celular para ver la <strong>invitación digital</strong> y <strong>confirmar</strong>.<br>
+              Tu código: <span class="inv-code">${g.codigo_acceso}</span>
             </div>
+            <div class="inv-deadline">Confirma a más tardar el lunes 15 de junio de 2026.</div>
           </div>
-          <div class="inv-deadline">Por favor confirma tu asistencia a más tardar el lunes 15 de junio de 2026.</div>
-          <div class="inv-footer">Con cariño, la familia</div>
         `;
         area.appendChild(card);
 
         // Generar QR personalizado (enlace con reconocimiento automático)
         new QRCode(document.getElementById(`qr-${g.id}`), {
           text: personalUrl,
-          width: 110,
-          height: 110,
+          width: 96,
+          height: 96,
           colorDark: "#4A1124",
           colorLight: "#FFFFFF",
           correctLevel: QRCode.CorrectLevel.M
