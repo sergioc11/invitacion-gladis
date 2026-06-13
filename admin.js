@@ -243,8 +243,12 @@ function calculateStats(guests) {
   let declined = 0;
   let pending = 0;
   let plates = 0;
-  
+  let totalPasses = 0;
+
   guests.forEach(g => {
+    // Sumar todos los pases otorgados (capacidad total), sin importar el estado
+    totalPasses += (g.pases_totales || 0);
+
     if (g.confirmado === true) {
       confirmed++;
       plates += (g.asistentes_confirmados || 0);
@@ -254,8 +258,9 @@ function calculateStats(guests) {
       pending++;
     }
   });
-  
+
   document.getElementById("stat-total").innerText = total;
+  document.getElementById("stat-passes").innerText = totalPasses;
   document.getElementById("stat-confirmed").innerText = confirmed;
   document.getElementById("stat-plates").innerText = plates;
   document.getElementById("stat-declined").innerText = declined;
