@@ -353,12 +353,15 @@ function renderTable(guests) {
     const personalInviteUrl = `${inviteUrl}?inv=${encodeURIComponent(g.id)}&pin=${encodeURIComponent(g.codigo_acceso)}`;
     const shareMessage = `Hola *${g.nombre_completo}*, queremos invitarte de manera muy especial a celebrar los *70 Años de Mamá Gladis*. 🌸
 
+🤫 *¡IMPORTANTE: Es una FIESTA SORPRESA!*
+Por favor guarda el secreto y no le comentes absolutamente nada a ella. 🙏
+
 Solo da clic en tu enlace personal para ver todos los detalles y confirmar tu asistencia. ¡La invitación te reconocerá automáticamente!
 👉 ${personalInviteUrl}
 
 🔑 Por si lo necesitas, tu código de acceso personal es: *${g.codigo_acceso}*
 
-¡Esperamos contar con tu valiosa presencia!`;
+¡Esperamos contar con tu valiosa presencia... y con tu silencio! 🤭`;
 
     const escapedShareMessage = shareMessage.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
 
