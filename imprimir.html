@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imprimir Invitaciones - 70 Años de Mamá Gladis</title>
+
+  <!-- Google Fonts (mismas de la invitación digital) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos Globales (para la pantalla de bloqueo) -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Generador de códigos QR (local, funciona también al imprimir) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --inv-burgundy: #6D1A36;
+      --inv-burgundy-dark: #4A1124;
+      --inv-gold: #C5A880;
+      --inv-gold-dark: #A8895E;
+      --inv-cream: #FDF8F0;
+      --inv-text: #3E3A35;
+    }
+
+    body { background-color: #EEE9E1; }
+
+    /* ----- Barra de controles (no se imprime) ----- */
+    .print-controls {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+    .print-controls h1 {
+      font-family: 'Cinzel', serif;
+      color: var(--inv-burgundy);
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .print-controls p.help {
+      text-align: center;
+      color: #7A736A;
+      font-size: 0.88rem;
+      margin-bottom: 18px;
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .controls-row input[type="text"], .controls-row select {
+      padding: 10px 14px;
+      border: 1.5px solid rgba(197, 168, 128, 0.5);
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.9rem;
+      background: #FFF;
+      min-width: 230px;
+    }
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--inv-burgundy);
+      color: #FFF;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+    .btn-print:hover { background: var(--inv-burgundy-dark); }
+    .print-count {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #7A736A;
+      margin-bottom: 8px;
+    }
+
+    /* ----- Tarjeta de invitación (media carta, una por página) ----- */
+    .cards-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 26px;
+      padding-bottom: 60px;
+    }
+
+    .inv-card {
+      width: 14cm;
+      min-height: 19.2cm;
+      background-color: var(--inv-cream);
+      border: 2px solid var(--inv-gold);
+      outline: 6px solid var(--inv-cream);
+      outline-offset: -10px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.18);
+      padding: 1.1cm 1cm 0.9cm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-sizing: border-box;
+    }
+    /* Marco interior decorativo */
+    .inv-card::before {
+      content: "";
+      position: absolute;
+      inset: 0.45cm;
+      border: 1px solid var(--inv-gold);
+      pointer-events: none;
+    }
+
+    .inv-pre-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.66rem;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--inv-gold-dark);
+      margin-top: 0.25cm;
+    }
+    .inv-script {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.1rem;
+      color: var(--inv-burgundy);
+      line-height: 1;
+      margin-top: 8px;
+    }
+    .inv-big-number {
+      font-family: 'Cinzel', serif;
+      font-size: 4.4rem;
+      font-weight: 700;
+      color: var(--inv-burgundy);
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .inv-years {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--inv-gold-dark);
+      margin-top: 2px;
+    }
+    .inv-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--inv-text);
+      margin-top: 10px;
+    }
+    .gold-divider {
+      width: 4cm;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--inv-gold), transparent);
+      margin: 12px auto 10px;
+    }
+
+    .inv-surprise {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--inv-burgundy);
+      background: rgba(197, 168, 128, 0.16);
+      border: 1px dashed var(--inv-gold);
+      border-radius: 8px;
+      padding: 7px 14px;
+      max-width: 86%;
+    }
+
+    .inv-details {
+      margin-top: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.86rem;
+      color: var(--inv-text);
+      line-height: 1.75;
+    }
+    .inv-details strong { color: var(--inv-burgundy); }
+
+    .inv-guest-box {
+      margin-top: 12px;
+      width: 88%;
+      border: 1px solid var(--inv-gold);
+      border-radius: 10px;
+      padding: 10px 14px 12px;
+      background: #FFF;
+    }
+    .inv-guest-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.62rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--inv-gold-dark);
+    }
+    .inv-guest-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: var(--inv-burgundy);
+      margin-top: 3px;
+    }
+    .inv-guest-passes {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      color: var(--inv-text);
+      margin-top: 3px;
+    }
+
+    .inv-qr-row {
+      margin-top: 13px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 88%;
+      justify-content: center;
+    }
+    .inv-qr {
+      background: #FFF;
+      padding: 7px;
+      border: 1px solid var(--inv-gold);
+      border-radius: 8px;
+    }
+    .inv-qr img, .inv-qr canvas { display: block; }
+    .inv-qr-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75rem;
+      color: var(--inv-text);
+      text-align: left;
+      max-width: 6.2cm;
+      line-height: 1.55;
+    }
+    .inv-code {
+      font-family: 'Courier New', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--inv-burgundy);
+    }
+    .inv-deadline {
+      margin-top: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      font-style: italic;
+      color: #8A8178;
+    }
+    .inv-footer {
+      margin-top: auto;
+      padding-top: 8px;
+      font-family: 'Great Vibes', cursive;
+      font-size: 1.25rem;
+      color: var(--inv-gold-dark);
+    }
+
+    /* ----- Impresión ----- */
+    @media print {
+      body { background: #FFF; }
+      .print-controls, .admin-lock-overlay { display: none !important; }
+      .cards-area { gap: 0; padding: 0; }
+      .inv-card {
+        box-shadow: none;
+        page-break-after: always;
+        margin: 0 auto;
+      }
+      .inv-card:last-child { page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla de Bloqueo (misma clave del panel de administración) -->
+  <div id="print-lock-screen" class="admin-lock-overlay">
+    <div class="admin-lock-card">
+      <div class="admin-lock-icon">
+        <i data-lucide="printer"></i>
+      </div>
+      <h2 class="admin-lock-title">Imprimir Invitaciones</h2>
+      <p class="admin-lock-desc">Introduce la clave de administrador para generar las tarjetas:</p>
+      <div class="form-group">
+        <input type="password" id="print-pass-input" class="form-textarea" placeholder="Contraseña de Administrador" style="text-align: center; margin-bottom: 15px; resize: none; padding: 12px;" rows="1">
+        <p id="print-login-error" class="pin-error-text hidden" style="justify-content: center; margin-bottom: 15px;"><i data-lucide="alert-triangle"></i> Clave incorrecta. Inténtalo de nuevo.</p>
+        <button type="button" id="print-login-btn" class="btn-primary btn-full">Ingresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controles (no se imprimen) -->
+  <div id="print-dashboard" class="hidden">
+    <div class="print-controls">
+      <h1>Tarjetas de Invitación para Imprimir</h1>
+      <p class="help">Cada invitado tiene su propia tarjeta con nombre, código y QR personalizado. Usa el botón Imprimir (o guarda como PDF) — sale una tarjeta por página.</p>
+      <div class="controls-row">
+        <input type="text" id="print-search" placeholder="Buscar invitado por nombre...">
+        <select id="print-filter">
+          <option value="nophone" selected>Solo invitados SIN teléfono</option>
+          <option value="all">Todos los invitados</option>
+          <option value="notsent">Solo con invitación no enviada</option>
+        </select>
+        <button type="button" class="btn-print" onclick="window.print()">
+          <i data-lucide="printer" style="width:16px; height:16px;"></i> Imprimir
+        </button>
+      </div>
+      <p class="print-count" id="print-count"></p>
+      <div id="print-loader" class="loader-container">
+        <div class="spinner"></div>
+        <p>Cargando lista de invitados...</p>
+      </div>
+    </div>
+
+    <!-- Tarjetas generadas -->
+    <div class="cards-area" id="cards-area"></div>
+  </div>
+
+  <script>
+    /* ======================================================================
+       GENERADOR DE TARJETAS DE INVITACIÓN IMPRESAS - 70 AÑOS DE MAMÁ GLADIS
+       Para invitados sin teléfono: tarjeta física con QR personalizado.
+       ====================================================================== */
+    const SUPABASE_URL = "https://mvdolghwdhggpiggtxiy.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_JFLeojGNwTs-PpvCb8y3TQ_05GT-JjB";
+    // Misma clave del panel de administración (Gladis70Admin)
+    const ADMIN_PASSWORD_HASH = "c672ea0fd92f81c3f6a572d67ef98f7792e71d1b5d9f94929bca56fbccf613aa";
+    const INVITE_BASE_URL = "https://sergioc11.github.io/invitacion-gladis/";
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const isSupabaseConfigured = SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "";
+    let supabaseClient = null;
+    if (isSupabaseConfigured && typeof supabase !== 'undefined') {
+      try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch (e) { console.error(e); }
+    }
+
+    const localMock = [
+      { id: "mock-1", nombre_completo: "Sergio Castellanos", telefono: "50212345678", codigo_acceso: "1234", pases_totales: 3, invitacion_enviada: true },
+      { id: "mock-2", nombre_completo: "María de los Ángeles Estrada", telefono: null, codigo_acceso: "5678", pases_totales: 2, invitacion_enviada: false },
+      { id: "mock-5", nombre_completo: "Familiar Ruano", telefono: null, codigo_acceso: "9999", pases_totales: 5, invitacion_enviada: false }
+    ];
+
+    let allGuests = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginBtn = document.getElementById("print-login-btn");
+      const passInput = document.getElementById("print-pass-input");
+      if (loginBtn && passInput) {
+        loginBtn.addEventListener("click", verifyAccess);
+        passInput.addEventListener("keydown", (e) => { if (e.key === "Enter") verifyAccess(); });
+      }
+      if (sessionStorage.getItem("admin_logged_in") === "true") unlock();
+
+      document.getElementById("print-search").addEventListener("input", renderCards);
+      document.getElementById("print-filter").addEventListener("change", renderCards);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    async function verifyAccess() {
+      const passInput = document.getElementById("print-pass-input");
+      const errorMsg = document.getElementById("print-login-error");
+      const enteredHash = await sha256(passInput.value.trim());
+      if (enteredHash === ADMIN_PASSWORD_HASH) {
+        sessionStorage.setItem("admin_logged_in", "true");
+        if (errorMsg) errorMsg.classList.add("hidden");
+        unlock();
+      } else {
+        if (errorMsg) errorMsg.classList.remove("hidden");
+        passInput.value = "";
+        passInput.focus();
+      }
+    }
+
+    function unlock() {
+      document.getElementById("print-lock-screen").classList.add("hidden");
+      document.getElementById("print-dashboard").classList.remove("hidden");
+      loadGuests();
+    }
+
+    async function loadGuests() {
+      const loader = document.getElementById("print-loader");
+      loader.classList.remove("hidden");
+      try {
+        if (isSupabaseConfigured && supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('invitados')
+            .select('id, nombre_completo, telefono, codigo_acceso, pases_totales, invitacion_enviada')
+            .order('nombre_completo', { ascending: true });
+          if (error) throw error;
+          allGuests = data || [];
+        } else {
+          allGuests = [...localMock];
+        }
+        renderCards();
+      } catch (e) {
+        console.error("Error al cargar invitados:", e);
+        alert("Ocurrió un error al cargar la lista de invitados. Verifica tu conexión.");
+      } finally {
+        loader.classList.add("hidden");
+      }
+    }
+
+    function renderCards() {
+      const area = document.getElementById("cards-area");
+      const searchVal = (document.getElementById("print-search").value || "").toLowerCase().trim();
+      const filterVal = document.getElementById("print-filter").value;
+
+      const visible = allGuests.filter(g => {
+        const nameMatch = g.nombre_completo.toLowerCase().includes(searchVal);
+        const hasPhone = g.telefono && String(g.telefono).trim() !== "";
+        let filterMatch = true;
+        if (filterVal === "nophone") filterMatch = !hasPhone;
+        else if (filterVal === "notsent") filterMatch = g.invitacion_enviada !== true;
+        return nameMatch && filterMatch;
+      });
+
+      document.getElementById("print-count").innerText =
+        visible.length === 1 ? "1 tarjeta lista para imprimir" : `${visible.length} tarjetas listas para imprimir`;
+
+      area.innerHTML = "";
+
+      visible.forEach(g => {
+        const personalUrl = `${INVITE_BASE_URL}?inv=${encodeURIComponent(g.id)}&pin=${encodeURIComponent(g.codigo_acceso)}`;
+        const card = document.createElement("div");
+        card.className = "inv-card";
+        card.innerHTML = `
+          <div class="inv-pre-title">Celebremos juntos</div>
+          <div class="inv-script">Los</div>
+          <div class="inv-big-number">70</div>
+          <div class="inv-years">Años</div>
+          <div class="inv-name">de Mamá Gladis</div>
+          <div class="gold-divider"></div>
+          <div class="inv-surprise">🤫 ¡Es una FIESTA SORPRESA! Por favor guarda el secreto y no le comentes nada a ella.</div>
+          <div class="inv-details">
+            <strong>Sábado, 20 de Junio de 2026</strong> · 18:00 horas (6:00 PM)<br>
+            <strong>Salón Municipal de Sanarate</strong>, El Progreso
+          </div>
+          <div class="inv-guest-box">
+            <div class="inv-guest-label">Invitación especial para</div>
+            <div class="inv-guest-name">${g.nombre_completo}</div>
+            <div class="inv-guest-passes">${g.pases_totales === 1 ? 'Válida por 1 pase' : 'Válida por ' + g.pases_totales + ' pases'}</div>
+          </div>
+          <div class="inv-qr-row">
+            <div class="inv-qr" id="qr-${g.id}"></div>
+            <div class="inv-qr-text">
+              Escanea este código con la cámara de tu celular para ver la <strong>invitación digital</strong> y <strong>confirmar tu asistencia</strong>.<br>
+              Tu código personal:<br><span class="inv-code">${g.codigo_acceso}</span>
+            </div>
+          </div>
+          <div class="inv-deadline">Por favor confirma tu asistencia a más tardar el domingo 14 de junio de 2026.</div>
+          <div class="inv-footer">Con cariño, la familia</div>
+        `;
+        area.appendChild(card);
+
+        // Generar QR personalizado (enlace con reconocimiento automático)
+        new QRCode(document.getElementById(`qr-${g.id}`), {
+          text: personalUrl,
+          width: 110,
+          height: 110,
+          colorDark: "#4A1124",
+          colorLight: "#FFFFFF",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      });
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

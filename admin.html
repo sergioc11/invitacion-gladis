@@ -47,9 +47,20 @@
         <h1>Control de Invitados</h1>
         <p>Gestiona la lista, mesas, pases y consulta las confirmaciones de asistencia.</p>
       </div>
-      <button type="button" class="btn-secondary" onclick="logoutAdmin()">
-        <i data-lucide="log-out" class="btn-icon"></i> Cerrar Panel
-      </button>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end;">
+        <a href="index.html" target="_blank" rel="noopener" class="btn-secondary" style="text-decoration: none;" title="Ver la invitación tal como la ven los invitados">
+          <i data-lucide="mail-open" class="btn-icon"></i> Ver Invitación
+        </a>
+        <a href="enviar.html" target="_blank" rel="noopener" class="btn-secondary" style="text-decoration: none;" title="Página para enviar invitaciones por WhatsApp">
+          <i data-lucide="send" class="btn-icon"></i> Enviar Invitaciones
+        </a>
+        <a href="imprimir.html" target="_blank" rel="noopener" class="btn-secondary" style="text-decoration: none;" title="Generar tarjetas impresas con QR personalizado">
+          <i data-lucide="printer" class="btn-icon"></i> Imprimir Tarjetas
+        </a>
+        <button type="button" class="btn-secondary" onclick="logoutAdmin()">
+          <i data-lucide="log-out" class="btn-icon"></i> Cerrar Panel
+        </button>
+      </div>
     </header>
 
     <!-- Indicador de Carga del Panel -->
