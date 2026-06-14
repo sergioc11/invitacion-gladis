@@ -434,7 +434,8 @@
       area.innerHTML = "";
 
       visible.forEach(g => {
-        const personalUrl = `${INVITE_BASE_URL}?inv=${encodeURIComponent(g.id)}&pin=${encodeURIComponent(g.codigo_acceso)}`;
+        // &plazo=17 indica a la app que es una tarjeta física: plazo extendido al miércoles 17
+        const personalUrl = `${INVITE_BASE_URL}?inv=${encodeURIComponent(g.id)}&pin=${encodeURIComponent(g.codigo_acceso)}&plazo=17`;
         const card = document.createElement("div");
         card.className = "inv-card";
         card.innerHTML = `
@@ -464,7 +465,7 @@
               Escanea con la cámara de tu celular para ver la <strong>invitación digital</strong> y <strong>confirmar</strong>.<br>
               Tu código: <span class="inv-code">${g.codigo_acceso}</span>
             </div>
-            <div class="inv-deadline">Confirma a más tardar el lunes 15 de junio de 2026.</div>
+            <div class="inv-deadline">Confirma a más tardar el miércoles 17 de junio de 2026, al finalizar la noche.</div>
           </div>
         `;
         area.appendChild(card);

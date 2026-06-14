@@ -768,10 +768,10 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
     tableValEl.innerHTML = `<span style="color:var(--color-text-muted); font-style:italic;">Por asignarse (Te notificaremos pronto)</span>`;
   }
   
-  // Verificar si la fecha límite ya expiró (Lunes 15 de Junio de 2026, 23:59:59)
+  // Verificar si la fecha límite ya expiró (según el tipo de invitación)
   const now = new Date();
-  const deadline = new Date("2026-06-16T00:00:00");
-  const isDeadlinePassed = now >= deadline;
+  const rsvpPlazo = getRSVPDeadline();
+  const isDeadlinePassed = now >= rsvpPlazo.date;
 
   // Eliminar cualquier mensaje previo de deadline anterior
   const oldDeadlineMsg = document.getElementById("rsvp-deadline-message");
@@ -790,18 +790,18 @@ function unlockRSVPDetails(guest, shouldScroll = true) {
     if (guest.confirmado === true) {
       deadlineMsg.innerHTML = `
         <div class="status-badge status-attending"><i data-lucide="check-circle"></i> Asistencia Confirmada</div>
-        <p class="deadline-msg-text">El período de confirmaciones finalizó el 15 de junio. Registraste tu asistencia con <strong>${guest.asistentes_confirmados} de ${guest.pases_totales} pases</strong>.</p>
+        <p class="deadline-msg-text">El período de confirmaciones finalizó el ${rsvpPlazo.corto}. Registraste tu asistencia con <strong>${guest.asistentes_confirmados} de ${guest.pases_totales} pases</strong>.</p>
         <p class="deadline-msg-sub">${guest.numero_mesa ? `¡Te esperamos en la <strong>${guest.numero_mesa}</strong>!` : '¡Te esperamos! Te notificaremos tu mesa asignada pronto.'}</p>
       `;
     } else if (guest.confirmado === false) {
       deadlineMsg.innerHTML = `
         <div class="status-badge status-declined"><i data-lucide="x-circle"></i> Asistencia Declinada</div>
-        <p class="deadline-msg-text">El período de confirmaciones finalizó el 15 de junio. Registraste que no te era posible asistir.</p>
+        <p class="deadline-msg-text">El período de confirmaciones finalizó el ${rsvpPlazo.corto}. Registraste que no te era posible asistir.</p>
       `;
     } else {
       deadlineMsg.innerHTML = `
         <div class="status-badge status-pending"><i data-lucide="alert-circle"></i> Plazo Vencido</div>
-        <p class="deadline-msg-text">El período de confirmaciones finalizó el lunes 15 de junio. No se registró respuesta a esta invitación.</p>
+        <p class="deadline-msg-text">El período de confirmaciones finalizó el ${rsvpPlazo.corto}. No se registró respuesta a esta invitación.</p>
         <p class="deadline-msg-sub">Por favor, comunícate directamente con los organizadores si tienes dudas.</p>
       `;
     }
@@ -1099,7 +1099,7 @@ function clearSelectedGuest() {
   
   // Mostrar aviso de deadline si no ha vencido el plazo
   const now = new Date();
-  const deadline = new Date("2026-06-16T00:00:00");
+  const deadline = getRSVPDeadline().date;
   const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
   if (deadlineNotice && now < deadline) {
     deadlineNotice.classList.remove("hidden");
@@ -1300,32 +1300,60 @@ async function autoLoginFromLocalStorage() {
   }
 }
 
+// FECHA LÍMITE DE CONFIRMACIÓN (centralizada)
+// - Invitaciones DIGITALES (por defecto): lunes 15 de junio de 2026. Corta a la
+//   medianoche del 16 (new Date("2026-06-16T00:00:00")).
+// - Tarjetas FÍSICAS (el QR lleva &plazo=17): plazo extendido al miércoles 17 de
+//   junio "al finalizar la noche". Corta a la medianoche del 18.
+function getRSVPDeadline() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("plazo") === "17") {
+      return {
+        date: new Date("2026-06-18T00:00:00"),
+        corto: "miércoles 17 de junio",
+        largo: "Miércoles 17 de Junio de 2026"
+      };
+    }
+  } catch (e) { /* si falla la lectura del parámetro, se usa el plazo por defecto */ }
+  return {
+    date: new Date("2026-06-16T00:00:00"),
+    corto: "lunes 15 de junio",
+    largo: "Lunes 15 de Junio de 2026"
+  };
+}
+
 // VERIFICACIÓN DE FECHA LÍMITE AL CARGAR LA PÁGINA
 function checkRSVPDeadlineOnLoad() {
   try {
     const now = new Date();
-    const deadline = new Date("2026-06-16T00:00:00"); // Martes 16 a las 00:00 (límite: Lunes 15 a las 23:59:59 / medianoche)
-    
+    const rsvpPlazo = getRSVPDeadline();
+    const deadline = rsvpPlazo.date;
+    const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
+
     if (now >= deadline) {
-      const deadlineNotice = document.querySelector(".rsvp-deadline-notice");
       if (deadlineNotice) {
         deadlineNotice.style.backgroundColor = "#FFEBEE";
         deadlineNotice.style.borderColor = "#FFCDD2";
         deadlineNotice.style.color = "#C62828";
         deadlineNotice.innerHTML = `
           <i data-lucide="calendar-x" style="color:#C62828;"></i>
-          <span>El período de confirmación finalizó el <strong>Lunes 15 de Junio de 2026</strong></span>
+          <span>El período de confirmación finalizó el <strong>${rsvpPlazo.largo}</strong></span>
         `;
       }
-      
+
       const instructions = document.querySelector(".rsvp-instructions");
       if (instructions) {
         instructions.innerText = "El período de confirmaciones ha cerrado, pero aún puedes buscar tu nombre para consultar tu número de mesa asignado:";
       }
-      
+
       if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
+    } else if (deadlineNotice) {
+      // Plazo aún abierto: mostrar la fecha correcta según el tipo de invitación
+      const span = deadlineNotice.querySelector("span");
+      if (span) span.innerHTML = `Confirmaciones abiertas hasta el <strong>${rsvpPlazo.largo}</strong>`;
     }
   } catch (e) {
     console.error("Error al comprobar fecha límite de carga:", e);
