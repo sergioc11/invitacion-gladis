@@ -1301,25 +1301,15 @@ async function autoLoginFromLocalStorage() {
 }
 
 // FECHA LÍMITE DE CONFIRMACIÓN (centralizada)
-// - Invitaciones DIGITALES (por defecto): lunes 15 de junio de 2026. Corta a la
-//   medianoche del 16 (new Date("2026-06-16T00:00:00")).
-// - Tarjetas FÍSICAS (el QR lleva &plazo=17): plazo extendido al miércoles 17 de
-//   junio "al finalizar la noche". Corta a la medianoche del 18.
+// Plazo único para TODAS las invitaciones (digitales y tarjetas físicas):
+// miércoles 17 de junio de 2026 "al finalizar la noche". Corta a la medianoche
+// del 18 (new Date("2026-06-18T00:00:00")), igual que dice la tarjeta física.
+// Se unificó porque los QR impresos no siempre llevan el parámetro &plazo=17.
 function getRSVPDeadline() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("plazo") === "17") {
-      return {
-        date: new Date("2026-06-18T00:00:00"),
-        corto: "miércoles 17 de junio",
-        largo: "Miércoles 17 de Junio de 2026"
-      };
-    }
-  } catch (e) { /* si falla la lectura del parámetro, se usa el plazo por defecto */ }
   return {
-    date: new Date("2026-06-16T00:00:00"),
-    corto: "lunes 15 de junio",
-    largo: "Lunes 15 de Junio de 2026"
+    date: new Date("2026-06-18T00:00:00"),
+    corto: "miércoles 17 de junio",
+    largo: "Miércoles 17 de Junio de 2026"
   };
 }
 
