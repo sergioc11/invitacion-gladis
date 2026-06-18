@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pizarra de Mesas - 70 Años de Mamá Gladis</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos Globales Compartidos -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Pantalla de Bloqueo / Control de Acceso (mismo login que el panel) -->
+  <div id="admin-lock-screen" class="admin-lock-overlay">
+    <div class="admin-lock-card">
+      <div class="admin-lock-icon">
+        <i data-lucide="lock"></i>
+      </div>
+      <h2 class="admin-lock-title">Pizarra de Mesas</h2>
+      <p class="admin-lock-desc">Introduce la clave de administrador para acceder a la distribución de mesas:</p>
+
+      <div class="form-group">
+        <input type="password" id="admin-pass-input" class="form-textarea" placeholder="Contraseña de Administrador" style="text-align: center; margin-bottom: 15px; resize: none; padding: 12px;" rows="1">
+        <p id="admin-login-error" class="pin-error-text hidden" style="justify-content: center; margin-bottom: 15px;"><i data-lucide="alert-triangle"></i> Clave incorrecta. Inténtalo de nuevo.</p>
+        <button type="button" id="admin-login-btn" class="btn-primary btn-full">Ingresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aplicación de la Pizarra (oculta hasta autenticarse) -->
+  <div id="pizarra-app" class="pizarra-app hidden">
+
+    <!-- Encabezado -->
+    <header class="pizarra-header">
+      <div class="admin-header-title">
+        <h1>Pizarra de Mesas</h1>
+        <p>Arrastra a los invitados confirmados hacia sus mesas. Las familias grandes pueden repartirse en varias mesas.</p>
+      </div>
+      <div class="pizarra-header-actions">
+        <span id="pizarra-conn-badge" class="pizarra-conn-badge"></span>
+        <button type="button" class="btn-secondary" onclick="openAddMesaModal()">
+          <i data-lucide="plus-circle" class="btn-icon"></i> Agregar Mesa
+        </button>
+        <a href="admin.html" class="btn-secondary" style="text-decoration: none;" title="Volver al panel de invitados">
+          <i data-lucide="arrow-left" class="btn-icon"></i> Volver al Panel
+        </a>
+      </div>
+    </header>
+
+    <!-- Indicador de Carga -->
+    <div id="pizarra-loader" class="loader-container">
+      <div class="spinner"></div>
+      <p>Cargando pizarra...</p>
+    </div>
+
+    <!-- Cuerpo: lateral de invitados + lienzo de mesas -->
+    <div id="pizarra-body" class="pizarra-body hidden">
+
+      <!-- LATERAL: invitados confirmados -->
+      <aside class="pizarra-sidebar">
+        <div class="pizarra-sidebar-head">
+          <h2>Invitados confirmados</h2>
+          <span id="pizarra-pending-count" class="pizarra-pending-count">0 por ubicar</span>
+        </div>
+        <div class="pizarra-search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="pizarra-guest-search" placeholder="Buscar invitado...">
+        </div>
+        <p class="pizarra-sidebar-hint">Arrastra una tarjeta a una mesa. Si la familia no cabe completa, podrás repartirla.</p>
+        <div id="pizarra-guest-list" class="pizarra-guest-list">
+          <!-- Tarjetas de invitados (dinámico) -->
+        </div>
+      </aside>
+
+      <!-- LIENZO: mesas -->
+      <main class="pizarra-canvas-region">
+        <div id="pizarra-viewport" class="pizarra-canvas-wrap">
+          <div id="pizarra-canvas-track">
+            <div id="pizarra-canvas" class="pizarra-canvas">
+              <!-- Mesas (dinámico) -->
+            </div>
+          </div>
+        </div>
+
+        <p id="pizarra-empty-canvas" class="pizarra-empty-canvas">
+          Aún no hay mesas. Usa <strong>«Agregar Mesa»</strong> para crear tu primer tablero.
+        </p>
+
+        <!-- Controles de Zoom -->
+        <div class="pizarra-zoom-bar">
+          <button type="button" class="pizarra-zoom-btn" title="Alejar" onclick="zoomBy(-0.1)"><i data-lucide="minus"></i></button>
+          <button type="button" class="pizarra-zoom-label" title="Restablecer zoom (100%)" onclick="resetZoom()"><span id="pizarra-zoom-pct">100%</span></button>
+          <button type="button" class="pizarra-zoom-btn" title="Acercar" onclick="zoomBy(0.1)"><i data-lucide="plus"></i></button>
+        </div>
+        <span class="pizarra-zoom-hint">Mantén <strong>Ctrl</strong> y usa la rueda del mouse para hacer zoom</span>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Agregar / Editar Mesa -->
+  <div id="mesa-modal" class="admin-modal-overlay">
+    <div class="admin-modal-box" style="max-width: 440px;">
+      <div class="admin-modal-header">
+        <h3 id="mesa-modal-title">Agregar Mesa</h3>
+        <button type="button" class="btn-modal-close" onclick="closeMesaModal()">&times;</button>
+      </div>
+      <form onsubmit="saveMesa(event)">
+        <input type="hidden" id="mesa-modal-id">
+        <div class="admin-modal-body">
+          <div class="admin-form-row">
+            <div class="form-group">
+              <label for="mesa-modal-numero" class="form-label">Número de mesa:</label>
+              <input type="number" id="mesa-modal-numero" class="form-textarea" style="resize:none;" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="mesa-modal-capacidad" class="form-label">Sillas (capacidad):</label>
+              <input type="number" id="mesa-modal-capacidad" class="form-textarea" style="resize:none;" min="1" max="50" value="10" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="mesa-modal-nombre" class="form-label">Nombre (opcional):</label>
+            <input type="text" id="mesa-modal-nombre" class="form-textarea" style="resize:none;" placeholder="Ej: Mesa de Honor (déjalo vacío para usar «Mesa N»)">
+            <small class="form-help">Si lo dejas vacío, la mesa se mostrará como «Mesa {número}».</small>
+          </div>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeMesaModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Mesa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Cuántas personas sentar (reparto de familia) -->
+  <div id="seat-modal" class="admin-modal-overlay">
+    <div class="admin-modal-box" style="max-width: 420px;">
+      <div class="admin-modal-header">
+        <h3>Sentar en la mesa</h3>
+        <button type="button" class="btn-modal-close" onclick="closeSeatModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="guest-info-box" style="margin-bottom: 18px; border-left-color: var(--color-burgundy);">
+          <div class="info-row"><span class="info-label">Invitado:</span><span class="info-value" id="seat-guest-name">-</span></div>
+          <div class="info-row"><span class="info-label">Mesa:</span><span class="info-value" id="seat-mesa-name">-</span></div>
+          <div class="info-row"><span class="info-label">Por ubicar:</span><span class="info-value" id="seat-remaining">-</span></div>
+          <div class="info-row"><span class="info-label">Lugares libres:</span><span class="info-value" id="seat-free">-</span></div>
+        </div>
+        <div class="form-group">
+          <label for="seat-qty" class="form-label">¿Cuántas personas sientas en esta mesa?</label>
+          <input type="number" id="seat-qty" class="form-textarea" style="resize:none;" min="1" value="1">
+          <small class="form-help">El resto quedará en el lateral para llevarlo a otra mesa.</small>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeSeatModal()">Cancelar</button>
+        <button type="button" class="btn-primary" onclick="confirmSeat()">Sentar aquí</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lógica de la Pizarra -->
+  <script src="pizarra.js?v=1"></script>
+</body>
+</html>

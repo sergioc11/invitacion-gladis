@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ubicador de Invitados - 70 Años de Mamá Gladis</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos Globales Compartidos -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Pantalla de Bloqueo (clave propia de la puerta) -->
+  <div id="puerta-lock-screen" class="admin-lock-overlay">
+    <div class="admin-lock-card">
+      <div class="admin-lock-icon">
+        <i data-lucide="map-pin"></i>
+      </div>
+      <h2 class="admin-lock-title">Ubicador de Invitados</h2>
+      <p class="admin-lock-desc">Introduce la clave de la puerta para buscar invitados y ver su mesa:</p>
+
+      <div class="form-group">
+        <input type="password" id="puerta-pass-input" class="form-textarea" placeholder="Clave de la puerta" style="text-align: center; margin-bottom: 15px; resize: none; padding: 12px;" rows="1">
+        <p id="puerta-login-error" class="pin-error-text hidden" style="justify-content: center; margin-bottom: 15px;"><i data-lucide="alert-triangle"></i> Clave incorrecta. Inténtalo de nuevo.</p>
+        <button type="button" id="puerta-login-btn" class="btn-primary btn-full">Ingresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aplicación del Ubicador (oculta hasta autenticarse) -->
+  <div id="ubicador-app" class="ubicador-app hidden">
+
+    <header class="ubicador-header">
+      <h1>Ubicador de Invitados</h1>
+      <p>Escribe el nombre del invitado para verificar su confirmación y conocer su mesa.</p>
+    </header>
+
+    <!-- Buscador -->
+    <div class="ubicador-search-wrap">
+      <div class="ubicador-search-box">
+        <i data-lucide="search"></i>
+        <input type="text" id="ubicador-search-input" placeholder="Buscar invitado por nombre..." autocomplete="off">
+        <button type="button" id="ubicador-clear" class="ubicador-clear hidden" title="Limpiar" onclick="clearUbicador()">&times;</button>
+      </div>
+      <div id="ubicador-results" class="ubicador-results"></div>
+    </div>
+
+    <!-- Tarjeta de Resultado / Detalle -->
+    <div id="ubicador-detail" class="ubicador-detail hidden"></div>
+
+    <!-- Listado general (para ubicar por scroll, sin buscar) -->
+    <div class="ubicador-directory">
+      <div class="ubicador-directory-head">
+        <h2>Listado general</h2>
+        <div class="ubicador-directory-head-right">
+          <span id="ubicador-dir-count" class="ubicador-dir-count">—</span>
+          <button type="button" class="ubicador-dir-refresh" title="Actualizar listado" onclick="loadDirectory()">
+            <i data-lucide="refresh-cw"></i>
+          </button>
+        </div>
+      </div>
+      <div id="ubicador-directory-list" class="ubicador-directory-list">
+        <p class="ubicador-result-empty">Cargando listado...</p>
+      </div>
+    </div>
+
+    <p class="ubicador-foot">Solo lectura · Las mesas se asignan desde la Pizarra de Mesas.</p>
+  </div>
+
+  <!-- Lógica del Ubicador -->
+  <script src="ubicador.js?v=1"></script>
+</body>
+</html>
