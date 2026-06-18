@@ -2689,6 +2689,38 @@ body.no-scroll {
 .pizarra-mesa.moving { box-shadow: var(--shadow-lg); z-index: 50; }
 .pizarra-mesa.is-over { border-color: #D9534F; }
 
+/* Mesas seleccionadas para mover en grupo */
+.pizarra-mesa.is-selected { border-color: var(--color-burgundy); box-shadow: 0 0 0 3px rgba(168,107,115,0.35), var(--shadow-md); }
+.pizarra-mesa.marquee-hit { border-color: var(--color-burgundy); box-shadow: 0 0 0 2px rgba(168,107,115,0.3); }
+
+/* Recuadro de selección (rubber-band) */
+.pizarra-marquee {
+  position: absolute;
+  border: 1.5px dashed var(--color-burgundy);
+  background: rgba(168,107,115,0.10);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* Aviso de cuántas mesas hay seleccionadas */
+.pizarra-selection-badge {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-burgundy);
+  color: #FFF;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  z-index: 25;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 .mesa-head {
   display: flex;
   align-items: center;

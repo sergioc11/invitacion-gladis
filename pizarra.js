@@ -48,11 +48,19 @@ let guestSearchTerm = "";
 let seatContext = null;   // { guestId, mesaId } para el modal de reparto
 
 // Zoom del lienzo
-const CANVAS_W = 2400;    // Ancho lógico del lienzo (coincide con el CSS)
-const CANVAS_H = 1500;    // Alto lógico del lienzo
+const CANVAS_BASE_W = 2400;  // Tamaño lógico mínimo del lienzo
+const CANVAS_BASE_H = 1500;
+const CANVAS_MARGIN = 500;   // Espacio libre que se mantiene más allá de la última mesa
+const MESA_W = 220;          // Ancho aproximado de una mesa (para cálculos)
+const MESA_H = 260;          // Alto aproximado de una mesa (para cálculos)
+let canvasW = CANVAS_BASE_W; // Tamaño lógico actual (crece según las mesas y el zoom)
+let canvasH = CANVAS_BASE_H;
 const ZOOM_MIN = 0.3;
 const ZOOM_MAX = 2;
 let zoom = 1;
+
+// Selección múltiple de mesas (para moverlas en grupo)
+let selectedMesaIds = new Set();
 
 // ==========================================================================
 // LOGIN (mismo patrón que el panel administrativo)
@@ -98,6 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { passive: false });
   }
 
+  // Selección por recuadro arrastrando sobre el lienzo vacío
+  enableMarqueeSelection();
+
+  // Esc para soltar la selección de mesas
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") clearSelection();
+  });
+
   applyZoom();
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -108,15 +124,50 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================================================
 function applyZoom() {
   const canvas = document.getElementById("pizarra-canvas");
-  const track = document.getElementById("pizarra-canvas-track");
   const pct = document.getElementById("pizarra-zoom-pct");
   if (canvas) canvas.style.transform = `scale(${zoom})`;
-  // La pista define el área desplazable según el zoom
-  if (track) {
-    track.style.width = (CANVAS_W * zoom) + "px";
-    track.style.height = (CANVAS_H * zoom) + "px";
-  }
   if (pct) pct.textContent = Math.round(zoom * 100) + "%";
+  // Recalcular el tamaño del lienzo: debe llenar el viewport al zoom actual
+  // y, además, contener todas las mesas con margen para seguir agregando.
+  recomputeCanvasSize();
+}
+
+// Calcula el tamaño lógico que debe tener el lienzo en este momento:
+//  - al menos lo suficiente para llenar el área visible al zoom actual (100%),
+//  - y lo suficiente para contener todas las mesas más un margen libre.
+function recomputeCanvasSize() {
+  const viewport = document.getElementById("pizarra-viewport");
+  let needW = CANVAS_BASE_W;
+  let needH = CANVAS_BASE_H;
+
+  if (viewport) {
+    // Dividir entre el zoom: en coordenadas lógicas el viewport "mide" más al alejar.
+    needW = Math.max(needW, viewport.clientWidth / zoom);
+    needH = Math.max(needH, viewport.clientHeight / zoom);
+  }
+
+  mesas.forEach(m => {
+    needW = Math.max(needW, (m.pos_x || 0) + MESA_W + CANVAS_MARGIN);
+    needH = Math.max(needH, (m.pos_y || 0) + MESA_H + CANVAS_MARGIN);
+  });
+
+  canvasW = Math.ceil(needW);
+  canvasH = Math.ceil(needH);
+  applyCanvasSize();
+}
+
+// Aplica el tamaño calculado al lienzo (lógico) y a la pista desplazable (escalada).
+function applyCanvasSize() {
+  const canvas = document.getElementById("pizarra-canvas");
+  const track = document.getElementById("pizarra-canvas-track");
+  if (canvas) {
+    canvas.style.width = canvasW + "px";
+    canvas.style.height = canvasH + "px";
+  }
+  if (track) {
+    track.style.width = (canvasW * zoom) + "px";
+    track.style.height = (canvasH * zoom) + "px";
+  }
 }
 
 function setZoom(value) {
@@ -295,6 +346,9 @@ function renderCanvas() {
   // Quitar mesas previas (conservando el mensaje de vacío)
   canvas.querySelectorAll(".pizarra-mesa").forEach(el => el.remove());
 
+  // Olvidar de la selección las mesas que ya no existen
+  selectedMesaIds.forEach(id => { if (!findMesa(id)) selectedMesaIds.delete(id); });
+
   if (empty) empty.style.display = mesas.length === 0 ? "block" : "none";
 
   mesas.forEach(mesa => {
@@ -365,9 +419,14 @@ function renderCanvas() {
 
     canvas.appendChild(el);
   });
+
+  // Ajustar el tamaño del lienzo a las mesas y reflejar la selección actual
+  recomputeCanvasSize();
+  applySelectionStyles();
 }
 
-// Reposicionar una mesa arrastrando su encabezado
+// Reposicionar mesas arrastrando su encabezado.
+// Si hay varias mesas seleccionadas, se mueven todas en grupo.
 function enableMesaDrag(el, mesa) {
   const handle = el.querySelector(".mesa-head");
   if (!handle) return;
@@ -376,28 +435,147 @@ function enableMesaDrag(el, mesa) {
     // No iniciar arrastre si se hizo clic en un botón de herramientas
     if (e.target.closest(".mesa-tool-btn")) return;
     e.preventDefault();
-    el.classList.add("moving");
 
-    const startX = e.clientX, startY = e.clientY;
-    const origX = mesa.pos_x || 40, origY = mesa.pos_y || 40;
+    // Ctrl/Cmd/Shift + clic: alternar esta mesa en la selección, sin mover
+    if (e.ctrlKey || e.metaKey || e.shiftKey) {
+      if (selectedMesaIds.has(mesa.id)) selectedMesaIds.delete(mesa.id);
+      else selectedMesaIds.add(mesa.id);
+      applySelectionStyles();
+      return;
+    }
+
+    // Clic normal sobre una mesa que NO está seleccionada → seleccionar solo ella
+    if (!selectedMesaIds.has(mesa.id)) {
+      selectedMesaIds = new Set([mesa.id]);
+      applySelectionStyles();
+    }
+
+    // Mesas que se moverán: toda la selección actual
+    const moving = mesas
+      .filter(m => selectedMesaIds.has(m.id))
+      .map(m => ({
+        m,
+        x: m.pos_x || 40,
+        y: m.pos_y || 40,
+        el: document.querySelector(`.pizarra-mesa[data-mesa-id="${m.id}"]`)
+      }))
+      .filter(o => o.el);
+
+    moving.forEach(o => o.el.classList.add("moving"));
+    let moved = false;
 
     function onMove(ev) {
-      // Dividir el desplazamiento entre el zoom para que la mesa siga al cursor
-      let nx = origX + (ev.clientX - startX) / zoom;
-      let ny = origY + (ev.clientY - startY) / zoom;
-      // Mantener dentro del lienzo (coordenadas lógicas)
-      nx = Math.max(0, Math.min(nx, CANVAS_W - el.offsetWidth));
-      ny = Math.max(0, Math.min(ny, CANVAS_H - el.offsetHeight));
-      el.style.left = nx + "px";
-      el.style.top = ny + "px";
-      mesa.pos_x = nx;
-      mesa.pos_y = ny;
+      // Dividir el desplazamiento entre el zoom para que sigan al cursor
+      const dx = (ev.clientX - e.clientX) / zoom;
+      const dy = (ev.clientY - e.clientY) / zoom;
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved = true;
+      moving.forEach(o => {
+        const nx = Math.max(0, o.x + dx);
+        const ny = Math.max(0, o.y + dy);
+        o.el.style.left = nx + "px";
+        o.el.style.top = ny + "px";
+        o.m.pos_x = nx;
+        o.m.pos_y = ny;
+      });
+      // El lienzo crece si alguna mesa se acerca al borde
+      recomputeCanvasSize();
     }
     function onUp() {
       document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerup", onUp);
-      el.classList.remove("moving");
-      persistMesaPosition(mesa);
+      moving.forEach(o => o.el.classList.remove("moving"));
+      if (moved) {
+        moving.forEach(o => persistMesaPosition(o.m));
+      } else {
+        // Clic sin arrastrar dentro de un grupo → quedarse solo con esta mesa
+        selectedMesaIds = new Set([mesa.id]);
+        applySelectionStyles();
+      }
+    }
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+  });
+}
+
+// ==========================================================================
+// SELECCIÓN MÚLTIPLE DE MESAS
+// ==========================================================================
+function applySelectionStyles() {
+  document.querySelectorAll(".pizarra-mesa").forEach(el => {
+    el.classList.toggle("is-selected", selectedMesaIds.has(el.dataset.mesaId));
+  });
+  const badge = document.getElementById("pizarra-selection-badge");
+  if (badge) {
+    const n = selectedMesaIds.size;
+    if (n > 1) {
+      badge.textContent = `${n} mesas seleccionadas · arrástralas juntas (Esc para soltar)`;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+}
+
+function clearSelection() {
+  if (selectedMesaIds.size === 0) return;
+  selectedMesaIds.clear();
+  applySelectionStyles();
+}
+
+// Selección por recuadro (rubber-band) arrastrando sobre una zona vacía del lienzo
+function enableMarqueeSelection() {
+  const canvas = document.getElementById("pizarra-canvas");
+  if (!canvas) return;
+
+  canvas.addEventListener("pointerdown", (e) => {
+    // Solo si el clic fue en el lienzo vacío (no sobre una mesa)
+    if (e.target !== canvas) return;
+    e.preventDefault();
+
+    // Sin modificador, empezar de cero
+    if (!(e.ctrlKey || e.metaKey || e.shiftKey)) clearSelection();
+    const base = new Set(selectedMesaIds);
+
+    const rect = canvas.getBoundingClientRect();
+    const startX = (e.clientX - rect.left) / zoom;
+    const startY = (e.clientY - rect.top) / zoom;
+
+    const box = document.createElement("div");
+    box.className = "pizarra-marquee";
+    canvas.appendChild(box);
+
+    function onMove(ev) {
+      const curX = (ev.clientX - rect.left) / zoom;
+      const curY = (ev.clientY - rect.top) / zoom;
+      const x = Math.min(startX, curX), y = Math.min(startY, curY);
+      const w = Math.abs(curX - startX), h = Math.abs(curY - startY);
+      box.style.left = x + "px";
+      box.style.top = y + "px";
+      box.style.width = w + "px";
+      box.style.height = h + "px";
+
+      mesas.forEach(m => {
+        const mx = m.pos_x || 40, my = m.pos_y || 40;
+        const mel = document.querySelector(`.pizarra-mesa[data-mesa-id="${m.id}"]`);
+        const mw = mel ? mel.offsetWidth : MESA_W;
+        const mh = mel ? mel.offsetHeight : MESA_H;
+        const hit = mx < x + w && mx + mw > x && my < y + h && my + mh > y;
+        if (mel) mel.classList.toggle("marquee-hit", hit);
+      });
+    }
+    function onUp() {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      selectedMesaIds = new Set(base);
+      mesas.forEach(m => {
+        const mel = document.querySelector(`.pizarra-mesa[data-mesa-id="${m.id}"]`);
+        if (mel && mel.classList.contains("marquee-hit")) {
+          selectedMesaIds.add(m.id);
+          mel.classList.remove("marquee-hit");
+        }
+      });
+      box.remove();
+      applySelectionStyles();
     }
     document.addEventListener("pointermove", onMove);
     document.addEventListener("pointerup", onUp);

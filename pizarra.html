@@ -85,6 +85,7 @@
 
       <!-- LIENZO: mesas -->
       <main class="pizarra-canvas-region">
+        <span id="pizarra-selection-badge" class="pizarra-selection-badge hidden"></span>
         <div id="pizarra-viewport" class="pizarra-canvas-wrap">
           <div id="pizarra-canvas-track">
             <div id="pizarra-canvas" class="pizarra-canvas">
@@ -103,7 +104,7 @@
           <button type="button" class="pizarra-zoom-label" title="Restablecer zoom (100%)" onclick="resetZoom()"><span id="pizarra-zoom-pct">100%</span></button>
           <button type="button" class="pizarra-zoom-btn" title="Acercar" onclick="zoomBy(0.1)"><i data-lucide="plus"></i></button>
         </div>
-        <span class="pizarra-zoom-hint">Mantén <strong>Ctrl</strong> y usa la rueda del mouse para hacer zoom</span>
+        <span class="pizarra-zoom-hint">Zoom: <strong>Ctrl</strong> + rueda · Selección múltiple: <strong>Ctrl/Shift</strong> + clic o arrastra un recuadro sobre el lienzo</span>
       </main>
 
     </div>
@@ -171,6 +172,6 @@
   </div>
 
   <!-- Lógica de la Pizarra -->
-  <script src="pizarra.js?v=1"></script>
+  <script src="pizarra.js?v=2"></script>
 </body>
 </html>
